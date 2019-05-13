@@ -12,18 +12,9 @@ export class FileTreeComponentComponent implements OnInit {
   private tree: TreeComponent;
 
   @Output() dirUpdate = new EventEmitter<string>();
+  @Output() updatePlz = new EventEmitter();
 
-  private _dirTree: any;
-
-  get dirTree(): any {
-    return this._dirTree;
-  }
-
-  @Input()
-  set dirTree(tree: any) {
-    this._dirTree = tree;
-    this.tree.sizeChanged();
-  }
+  @Input() dirTree;
 
   options = {
     getChildren: (node: any) => {

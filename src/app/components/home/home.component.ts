@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ElectronService } from '../../providers/electron.service';
 import { DirTree } from '../../../../main-files';
 
@@ -9,15 +9,17 @@ import { DirTree } from '../../../../main-files';
 })
 export class HomeComponent implements OnInit {
 
-  root: DirTree = {rootPath: '', paths: [], tree: [{ id: '', name: 'root', path: ''}]};
+  root: DirTree = {rootPath: '', paths: [], tree: [{ id: '', name: 'bad root', path: ''}]};
 
   constructor(
-    public electronService: ElectronService) {}
+    public electronService: ElectronService,
+    private cdr:ChangeDetectorRef) {}
 
   ngOnInit() {
     this.electronService.ipcRenderer.on('root-update', (event, rootNode) => {
       this.root = rootNode;
       console.log(this.root);
+      this.cdr.detectChanges();
     });
     this.justStarted();
   }
