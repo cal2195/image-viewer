@@ -2,6 +2,8 @@ import { app, BrowserWindow, screen } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 
+import { initDir, readDir, DirTree } from './main-files';
+
 let win, serve;
 const args = process.argv.slice(1);
 serve = args.some(val => val === '--serve');
@@ -82,14 +84,23 @@ try {
   // throw e;
 }
 
+let angularApp;
+
 ipc.on('just-started', function (event, someMessage) {
-    dialog.showOpenDialog({
-      properties: ['openDirectory']
-    }, function (files) {
-      if (files) {
-        const rootFolder: string = files[0];
-        console.log('root folder: %s', rootFolder);
-      }
-    });
+  angularApp = event;
+  dialog.showOpenDialog({
+    properties: ['openDirectory']
+  }, function (files) {
+    if (files) {
+      const rootFolder: string = files[0];
+      console.log('root folder: %s', rootFolder);
+      initDir(rootFolder);
+      readDir('', updateRoot);
+    }
+  });
   }
 );
+
+function updateRoot(root: DirTree) {
+    angularApp.sender.send('root-update', root);
+}

@@ -16,8 +16,11 @@ import { ElectronService } from './providers/electron.service';
 
 import { WebviewDirective } from './directives/webview.directive';
 
+import { TreeModule } from 'angular-tree-component';
+
 import { AppComponent } from './app.component';
 import { HomeComponent } from './components/home/home.component';
+import { FileTreeComponentComponent } from './file-tree-component/file-tree-component.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -28,13 +31,15 @@ export function HttpLoaderFactory(http: HttpClient) {
   declarations: [
     AppComponent,
     HomeComponent,
-    WebviewDirective
+    WebviewDirective,
+    FileTreeComponentComponent
   ],
   imports: [
     BrowserModule,
     FormsModule,
     HttpClientModule,
     AppRoutingModule,
+    TreeModule.forRoot(),
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

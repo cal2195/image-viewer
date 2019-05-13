@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ElectronService } from '../../providers/electron.service';
+import { DirTree } from '../../../../main-files';
 
 @Component({
   selector: 'app-home',
@@ -8,14 +9,20 @@ import { ElectronService } from '../../providers/electron.service';
 })
 export class HomeComponent implements OnInit {
 
+  root: DirTree = {rootPath: '', paths: [], tree: [{name: 'root'}]};
+
   constructor(
     public electronService: ElectronService) {}
 
   ngOnInit() {
+    this.electronService.ipcRenderer.on('root-update', (event, rootNode) => {
+      this.root = rootNode;
+      console.log(this.root);
+    });
     this.justStarted();
   }
 
-  public justStarted(): void {
+  public justStarted() {
     this.electronService.ipcRenderer.send('just-started', 'lol');
   }
 }
