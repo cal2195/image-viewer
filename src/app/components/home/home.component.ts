@@ -9,7 +9,7 @@ import { DirTree } from '../../../../main-files';
 })
 export class HomeComponent implements OnInit {
 
-  root: DirTree = {rootPath: '', paths: [], tree: [{ id: '', name: 'bad root', path: ''}]};
+  root: DirTree = null;
 
   constructor(
     public electronService: ElectronService,
@@ -30,5 +30,9 @@ export class HomeComponent implements OnInit {
 
   public updateDir(path: string) {
     this.electronService.ipcRenderer.send('update-dir', path);
+  }
+
+  public openNewRoot() {
+    this.electronService.ipcRenderer.send('new-root');
   }
 }

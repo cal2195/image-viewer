@@ -1,4 +1,30 @@
-<app-file-tree-component
-  [dirTree]="this.root.tree"
-  (dirUpdate)="updateDir($event)"
-></app-file-tree-component>
+<div class="window">
+  <header class="toolbar toolbar-header">
+    <h1 class="title">Header</h1>
+    <div class="toolbar-actions">
+      <div class="btn-group">
+        <button class="btn btn-default" (click)="openNewRoot()">
+          <span class="icon icon-folder"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+  <div class="window-content">
+    <div class="pane-group">
+      <div class="pane-sm sidebar">
+        <app-file-tree-component
+          *ngIf="this.root"
+          [dirTree]="this.root.tree"
+          (dirUpdate)="updateDir($event)"
+        ></app-file-tree-component>
+      </div>
+      <div class="pane">
+        <virtual-scroller #scroll [items]="">
+        </virtual-scroller>
+      </div>
+    </div>
+  </div>
+  <footer class="toolbar toolbar-footer">
+    <h1 class="title">Footer</h1>
+  </footer>
+</div>

@@ -17,6 +17,7 @@ import { ElectronService } from './providers/electron.service';
 import { WebviewDirective } from './directives/webview.directive';
 
 import { TreeModule } from 'angular-tree-component';
+import { VirtualScrollerModule } from 'ngx-virtual-scroller';
 
 import { AppComponent } from './app.component';
 import { HomeComponent } from './components/home/home.component';
@@ -46,7 +47,8 @@ export function HttpLoaderFactory(http: HttpClient) {
         useFactory: (HttpLoaderFactory),
         deps: [HttpClient]
       }
-    })
+    }),
+    VirtualScrollerModule
   ],
   providers: [ElectronService],
   bootstrap: [AppComponent]

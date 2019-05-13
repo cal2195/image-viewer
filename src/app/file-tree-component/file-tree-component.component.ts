@@ -12,8 +12,6 @@ export class FileTreeComponentComponent implements OnInit {
   private tree: TreeComponent;
 
   @Output() dirUpdate = new EventEmitter<string>();
-  @Output() updatePlz = new EventEmitter();
-
   @Input() dirTree;
 
   options = {
@@ -21,7 +19,8 @@ export class FileTreeComponentComponent implements OnInit {
       console.log('updatedir');
       console.log(node);
       this.dirUpdate.emit(node.data.path + '/' + node.data.name);
-    }
+    },
+    useCheckbox: true
   };
 
   constructor() { }

@@ -88,6 +88,13 @@ let angularApp;
 
 ipc.on('just-started', function (event, someMessage) {
   angularApp = event;
+});
+
+ipc.on('update-dir', function (event, subpath) {
+  readDir(subpath, updateRoot);
+});
+
+ipc.on('new-root', function (event) {
   dialog.showOpenDialog({
     properties: ['openDirectory']
   }, function (files) {
@@ -98,11 +105,6 @@ ipc.on('just-started', function (event, someMessage) {
       readDir('', updateRoot);
     }
   });
-  }
-);
-
-ipc.on('update-dir', function (event, subpath) {
-  readDir(subpath, updateRoot);
 });
 
 function updateRoot(root: DirTree) {

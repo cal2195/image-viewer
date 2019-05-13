@@ -13,6 +13,7 @@ export interface TreeNode {
   name: string;
   children?: TreeNode[];
   hasChildren?: boolean;
+  isExpanded?: boolean;
   path: string;
 }
 
@@ -26,7 +27,7 @@ export interface DirTreeElement {
 let root: DirTree;
 
 export function initDir(rootDir: string) {
-  root = { rootPath: rootDir, paths: [], tree: [{ id: '', name: 'root', path: '', children: [], hasChildren: true }] };
+  root = { rootPath: rootDir, paths: [], tree: [{ id: '', name: 'root', path: '', children: [], isExpanded: true }] };
 }
 
 export function readDir(subPath: string, callback: any) {
@@ -92,6 +93,7 @@ export function readDir(subPath: string, callback: any) {
         }
       }
       parentNode.children = [];
+      parentNode.hasChildren = false;
     }
     callback(root);
   });
