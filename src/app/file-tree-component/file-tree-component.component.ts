@@ -1,5 +1,6 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 import { DirTree } from '../../../main-files';
+import { TreeComponent } from 'angular-tree-component';
 
 @Component({
   selector: 'app-file-tree-component',
@@ -7,8 +8,22 @@ import { DirTree } from '../../../main-files';
   styleUrls: ['./file-tree-component.component.scss']
 })
 export class FileTreeComponentComponent implements OnInit {
-  @Input() dirTree: any;
+  @ViewChild(TreeComponent)
+  private tree: TreeComponent;
+
   @Output() dirUpdate = new EventEmitter<string>();
+
+  private _dirTree: any;
+
+  get dirTree(): any {
+    return this._dirTree;
+  }
+
+  @Input()
+  set dirTree(tree: any) {
+    this._dirTree = tree;
+    this.tree.sizeChanged();
+  }
 
   options = {
     getChildren: (node: any) => {
