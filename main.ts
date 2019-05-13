@@ -6,6 +6,10 @@ let win, serve;
 const args = process.argv.slice(1);
 serve = args.some(val => val === '--serve');
 
+const ipc = require('electron').ipcMain;
+
+const dialog = require('electron').dialog;
+
 function createWindow() {
 
   const electronScreen = screen;
@@ -77,3 +81,15 @@ try {
   // Catch Error
   // throw e;
 }
+
+ipc.on('just-started', function (event, someMessage) {
+    dialog.showOpenDialog({
+      properties: ['openDirectory']
+    }, function (files) {
+      if (files) {
+        const rootFolder: string = files[0];
+        console.log('root folder: %s', rootFolder);
+      }
+    });
+  }
+);
