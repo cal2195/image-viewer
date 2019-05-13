@@ -22,6 +22,7 @@ import { VirtualScrollerModule } from 'ngx-virtual-scroller';
 import { AppComponent } from './app.component';
 import { HomeComponent } from './components/home/home.component';
 import { FileTreeComponentComponent } from './file-tree-component/file-tree-component.component';
+import { ThumbnailComponentComponent } from './thumbnail-component/thumbnail-component.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -33,7 +34,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     AppComponent,
     HomeComponent,
     WebviewDirective,
-    FileTreeComponentComponent
+    FileTreeComponentComponent,
+    ThumbnailComponentComponent
   ],
   imports: [
     BrowserModule,

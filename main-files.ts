@@ -48,7 +48,7 @@ export function readDir(subPath: string, callback: any) {
       root.paths.push(entry);
 
       // update tree
-      if (file.isDirectory()) {
+      if (file.isDirectory() && !file.name.startsWith('.')) {
         const dirs = subPath.split('/');
         let parentNode = root.tree[0];
         if (dirs.length > 1) {

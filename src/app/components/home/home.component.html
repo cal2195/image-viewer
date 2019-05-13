@@ -19,7 +19,11 @@
         ></app-file-tree-component>
       </div>
       <div class="pane">
-        <virtual-scroller #scroll [items]="">
+        <virtual-scroller #scroll [items]="this.root.paths">
+          <app-thumbnail-component
+            *ngFor="let item of scroll.viewPortItems"
+            [element]="item">
+          </app-thumbnail-component>
         </virtual-scroller>
       </div>
     </div>
