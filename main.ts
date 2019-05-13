@@ -101,6 +101,10 @@ ipc.on('just-started', function (event, someMessage) {
   }
 );
 
+ipc.on('update-dir', function (event, subpath) {
+  readDir(subpath, updateRoot);
+});
+
 function updateRoot(root: DirTree) {
     angularApp.sender.send('root-update', root);
 }

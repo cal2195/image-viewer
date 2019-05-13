@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { DirTree } from '../../../main-files';
 
 @Component({
@@ -8,8 +8,15 @@ import { DirTree } from '../../../main-files';
 })
 export class FileTreeComponentComponent implements OnInit {
   @Input() dirTree: any;
+  @Output() dirUpdate = new EventEmitter<string>();
 
-  options = {};
+  options = {
+    getChildren: (node: any) => {
+      console.log('updatedir');
+      console.log(node);
+      this.dirUpdate.emit(node.data.path + '/' + node.data.name);
+    }
+  };
 
   constructor() { }
 

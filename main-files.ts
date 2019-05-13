@@ -9,9 +9,11 @@ export interface DirTree {
 }
 
 export interface TreeNode {
+  id: string;
   name: string;
   children?: TreeNode[];
   hasChildren?: boolean;
+  path: string;
 }
 
 export interface DirTreeElement {
@@ -24,13 +26,16 @@ export interface DirTreeElement {
 let root: DirTree;
 
 export function initDir(rootDir: string) {
-  root = { rootPath: rootDir, paths: [], tree: [{ name: 'root', children: [], hasChildren: true }] };
+  root = { rootPath: rootDir, paths: [], tree: [{ id: '', name: 'root', path: '', children: [], hasChildren: true }] };
 }
 
 export function readDir(subPath: string, callback: any) {
   console.log('reading dir: %s', path.join(root.rootPath, subPath));
   fs.readdir(path.join(root.rootPath, subPath), {encoding: 'utf8', withFileTypes: true}, (err, files) => {
+    console.log(files);
     console.log(err);
+    let updated = false;
+
     // tslint:disable-next-line:forin
     files.forEach(file => {
       const entry: DirTreeElement = {
@@ -49,12 +54,45 @@ export function readDir(subPath: string, callback: any) {
           for (let i = 0; i < dirs.length; i++) {
             const dir = dirs[i];
             console.log('looking for %s in %s', dir, parentNode);
-            parentNode = parentNode.children[dir];
+            for (let j = 0; j < parentNode.children.length; j++) {
+              const child = parentNode.children[j];
+              console.log(child);
+              if (child.name === dir) {
+                parentNode = child;
+                console.log('found!');
+                break;
+              }
+            }
           }
         }
-        parentNode.children.push({ name: file.name, children: [], hasChildren: true });
+        if (!parentNode.children) {
+          parentNode.children = [];
+        }
+        parentNode.children.push({ id: subPath + '/' + file.name, name: file.name, path: subPath, hasChildren: true });
+        updated = true;
       }
     });
+
+    if (files.length === 0 || !updated) {
+      const dirs = subPath.split('/');
+      let parentNode = root.tree[0];
+      if (dirs.length > 1) {
+        for (let i = 0; i < dirs.length; i++) {
+          const dir = dirs[i];
+          console.log('looking for %s in %s', dir, parentNode);
+          for (let j = 0; j < parentNode.children.length; j++) {
+            const child = parentNode.children[j];
+            console.log(child);
+            if (child.name === dir) {
+              parentNode = child;
+              console.log('found!');
+              break;
+            }
+          }
+        }
+      }
+      parentNode.children = [];
+    }
     callback(root);
   });
 }

@@ -1,3 +1,4 @@
 <app-file-tree-component
   [dirTree]="this.root.tree"
+  (dirUpdate)="updateDir($event)"
 ></app-file-tree-component>
