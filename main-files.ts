@@ -1,9 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+var async = require("async");
 
 export interface DirTree {
   rootPath: string;
+  cachePath: string;
   paths: DirTreeElement[];
   tree: [TreeNode];
 }
@@ -25,9 +27,19 @@ export interface DirTreeElement {
 }
 
 let root: DirTree;
+let thumbQueue = async.queue((task, callback) => {
+  console.log('starting %s', task);
+  generateThumbnail(task.filePath, task.hash, callback);
+}, 2);
 
 export function initDir(rootDir: string) {
-  root = { rootPath: rootDir, paths: [], tree: [{ id: '', name: 'root', path: '', children: [], isExpanded: true }] };
+  const homedir = require('os').homedir();
+  const cachePath = homedir + '/.imageviewer/';
+  try {
+    fs.mkdirSync(cachePath);
+  } catch (e) {}
+  root = { rootPath: rootDir, cachePath: cachePath,
+    paths: [], tree: [{ id: '', name: 'root', path: '', children: [], isExpanded: true }] };
 }
 
 function removeBySubpath(subPath: string) {
@@ -50,9 +62,18 @@ export function readDir(subPath: string, recursive: boolean, callback: any) {
         folder: file.isDirectory(),
         name: file.name,
         path: subPath,
-        hash: hashString(subPath + '/' + file.name)
+        hash: hashString(root.rootPath + subPath + '/' + file.name)
       };
       root.paths.push(entry);
+
+      // gen thumbs
+      if (file.isFile() && file.name.endsWith('.jpg')) {
+        thumbQueue.push({ filePath: root.rootPath + subPath + '/' + file.name, hash: entry.hash },
+        function(err) {
+          console.log('finished processing foo');
+          console.log(err);
+      });
+      }
 
       // update tree
       if (file.isDirectory() && !file.name.startsWith('.')) {
@@ -120,4 +141,24 @@ export function readDir(subPath: string, recursive: boolean, callback: any) {
 function hashString(str: string): string {
   const hash = crypto.createHash('md5').update(str).digest('hex');
   return hash;
+}
+
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+// sends data back as a stream as process runs
+// requires an array of args
+const spawn = require('child_process').spawn;
+// sends all data back once the process exits in a buffer
+// also spawns a shell (can pass a single cmd string)
+const exec = require('child_process').exec;
+
+function generateThumbnail(filePath: string, hash: string, callback) {
+  const thumbCommand =
+    'ffmpeg -i "' + filePath + '" -vf scale=w=240:h=240:force_original_aspect_ratio=decrease "' + root.cachePath + hash + '.jpg"';
+  console.log(thumbCommand);
+  exec(thumbCommand, (err, data, stderr) => {
+    console.log(err);
+    console.log(data);
+    console.log(stderr);
+    callback();
+  });
 }

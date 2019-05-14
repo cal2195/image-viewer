@@ -38,6 +38,7 @@
             *ngFor="let item of scroll.viewPortItems"
             [element]="item"
             [rootFolder]="this.root.rootPath"
+            [cachePath]='this.root.cachePath'
             (click)="this.currentImage = item">
           </app-thumbnail-component>
         </virtual-scroller>

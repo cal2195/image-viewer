@@ -10,13 +10,14 @@ export class ThumbnailComponentComponent implements OnInit {
 
   @Input() element: DirTreeElement;
   @Input() rootFolder: string;
+  @Input() cachePath: string;
 
   path: string;
 
   constructor() { }
 
   ngOnInit() {
-    this.path = 'file://' + this.rootFolder + this.element.path + '/' + this.element.name;
+    this.path = 'file://' + this.cachePath + this.element.hash + '.jpg';
   }
 
 }
