@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 import { DirTree } from '../../../main-files';
-import { TreeComponent } from 'angular-tree-component';
+import { TreeComponent, TreeNode } from 'angular-tree-component';
 
 @Component({
   selector: 'app-file-tree-component',
@@ -12,6 +12,7 @@ export class FileTreeComponentComponent implements OnInit {
   private tree: TreeComponent;
 
   @Output() dirUpdate = new EventEmitter<string>();
+  @Output() changeSubPath = new EventEmitter<string>();
   @Input() dirTree;
 
   options = {
@@ -26,5 +27,11 @@ export class FileTreeComponentComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
+  }
+
+  pathSelected(event: any) {
+    console.log(event);
+    this.changeSubPath.emit(event.node.data.id);
+    this.dirUpdate.emit(event.node.data.id);
   }
 }

@@ -10,10 +10,11 @@ import { DirTree } from '../../../../main-files';
 export class HomeComponent implements OnInit {
 
   root: DirTree = null;
+  selectedSubPath: string;
 
   constructor(
     public electronService: ElectronService,
-    private cdr:ChangeDetectorRef) {}
+    private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.electronService.ipcRenderer.on('root-update', (event, rootNode) => {

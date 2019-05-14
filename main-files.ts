@@ -30,8 +30,15 @@ export function initDir(rootDir: string) {
   root = { rootPath: rootDir, paths: [], tree: [{ id: '', name: 'root', path: '', children: [], isExpanded: true }] };
 }
 
+function removeBySubpath(subPath: string) {
+  root.paths = root.paths.filter((element) => {
+    return element.path !== subPath;
+  });
+}
+
 export function readDir(subPath: string, callback: any) {
   console.log('reading dir: %s', path.join(root.rootPath, subPath));
+  removeBySubpath(subPath);
   fs.readdir(path.join(root.rootPath, subPath), {encoding: 'utf8', withFileTypes: true}, (err, files) => {
     console.log(files);
     console.log(err);
@@ -69,7 +76,15 @@ export function readDir(subPath: string, callback: any) {
         if (!parentNode.children) {
           parentNode.children = [];
         }
-        parentNode.children.push({ id: subPath + '/' + file.name, name: file.name, path: subPath, hasChildren: true });
+        let exists = false;
+        parentNode.children.forEach(element => {
+          if (element.id === subPath + '/' + file.name) {
+            exists = true;
+          }
+        });
+        if (!exists) {
+          parentNode.children.push({ id: subPath + '/' + file.name, name: file.name, path: subPath, hasChildren: true });
+        }
         updated = true;
       }
     });

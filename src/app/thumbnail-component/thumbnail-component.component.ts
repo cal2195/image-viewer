@@ -9,10 +9,14 @@ import { DirTreeElement } from '../../../main-files';
 export class ThumbnailComponentComponent implements OnInit {
 
   @Input() element: DirTreeElement;
+  @Input() rootFolder: string;
+
+  path: string;
 
   constructor() { }
 
   ngOnInit() {
+    this.path = 'file://' + this.rootFolder + this.element.path + '/' + this.element.name;
   }
 
 }

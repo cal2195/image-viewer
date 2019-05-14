@@ -1,3 +1,4 @@
 <div class="sidebar">
-  <tree-root #tree [nodes]="this.dirTree" [options]="this.options"></tree-root>
+  <tree-root #tree [nodes]="this.dirTree" [options]="this.options"
+    (activate)='this.pathSelected($event)'></tree-root>
 </div>

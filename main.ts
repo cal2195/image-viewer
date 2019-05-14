@@ -25,6 +25,7 @@ function createWindow() {
     height: size.height,
     webPreferences: {
       nodeIntegration: true,
+      webSecurity: false  // allow files from hard disk to show up
     },
   });
 
