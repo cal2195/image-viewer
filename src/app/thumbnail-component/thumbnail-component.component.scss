@@ -3,11 +3,16 @@
   width: 200px;
   display: inline-block;
   margin: 0;
+  position: relative;
 }
 
 .thumbnail {
   max-width: 80%;
   max-height: 80%;
+  position: absolute;
   margin: auto;
-  display: block;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
