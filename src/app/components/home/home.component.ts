@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ElectronService } from '../../providers/electron.service';
-import { DirTree } from '../../../../main-files';
+import { DirTree, DirTreeElement } from '../../../../main-files';
 
 @Component({
   selector: 'app-home',
@@ -12,6 +12,7 @@ export class HomeComponent implements OnInit {
   root: DirTree = null;
   selectedSubPath: string;
   recursive = false;
+  currentImage: DirTreeElement;
 
   constructor(
     public electronService: ElectronService,

@@ -15,6 +15,12 @@
     </div>
   </header>
   <div class="window-content">
+    <div *ngIf="this.currentImage" class="image-view">
+      <img
+        class="full-image"
+        [src]="'file://' + this.root.rootPath + this.currentImage.path + '/' + this.currentImage.name"
+        (click)="this.currentImage = null" />
+    </div>
     <div class="pane-group">
       <div class="pane-sm sidebar">
         <app-file-tree-component
@@ -31,7 +37,8 @@
           <app-thumbnail-component
             *ngFor="let item of scroll.viewPortItems"
             [element]="item"
-            [rootFolder]="this.root.rootPath">
+            [rootFolder]="this.root.rootPath"
+            (click)="this.currentImage = item">
           </app-thumbnail-component>
         </virtual-scroller>
       </div>
