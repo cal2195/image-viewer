@@ -7,7 +7,9 @@ import { DirTreeElement } from '../../main-files';
 export class FilterPipePipe implements PipeTransform {
 
   transform(items: DirTreeElement[], subPath: string, recursive: boolean): any {
-    console.log('filtering by path: %s', subPath);
+    if (!items) {
+      return;
+    }
     return items.filter((item) => {
       if (item.name.endsWith('.jpg')) {
         return (recursive && item.path.startsWith(subPath)) || (!recursive && item.path === subPath);

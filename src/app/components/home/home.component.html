@@ -9,7 +9,7 @@
         <button class="btn btn-default"
           [ngClass]="{ active: recursive }"
           (click)="toggleRecursive()">
-            <span class="icon icon-cloud"></span>
+            <span class="icon icon-flow-cascade"></span>
         </button>
       </div>
     </div>
@@ -25,7 +25,8 @@
         ></app-file-tree-component>
       </div>
       <div class="pane">
-        <virtual-scroller #scroll [items]="this.root.paths
+        <virtual-scroller *ngIf="this.root"
+          #scroll [items]="this.root.paths
           | filterPipe: this.selectedSubPath : this.recursive">
           <app-thumbnail-component
             *ngFor="let item of scroll.viewPortItems"

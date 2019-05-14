@@ -32,5 +32,6 @@ export class FileTreeComponentComponent implements OnInit {
     console.log(event);
     this.changeSubPath.emit(event.node.data.id);
     this.dirUpdate.emit(event.node.data.id);
+    event.node.setIsExpanded(true);
   }
 }
