@@ -36,7 +36,7 @@ function removeBySubpath(subPath: string) {
   });
 }
 
-export function readDir(subPath: string, callback: any) {
+export function readDir(subPath: string, recursive: boolean, callback: any) {
   console.log('reading dir: %s', path.join(root.rootPath, subPath));
   removeBySubpath(subPath);
   fs.readdir(path.join(root.rootPath, subPath), {encoding: 'utf8', withFileTypes: true}, (err, files) => {
@@ -86,6 +86,9 @@ export function readDir(subPath: string, callback: any) {
           parentNode.children.push({ id: subPath + '/' + file.name, name: file.name, path: subPath, hasChildren: true });
         }
         updated = true;
+        if (recursive) {
+          readDir(subPath + '/' + file.name, recursive, callback);
+        }
       }
     });
 

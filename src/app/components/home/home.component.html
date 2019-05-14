@@ -6,6 +6,11 @@
         <button class="btn btn-default" (click)="openNewRoot()">
           <span class="icon icon-folder"></span>
         </button>
+        <button class="btn btn-default"
+          [ngClass]="{ active: recursive }"
+          (click)="toggleRecursive()">
+            <span class="icon icon-cloud"></span>
+        </button>
       </div>
     </div>
   </header>
@@ -20,7 +25,8 @@
         ></app-file-tree-component>
       </div>
       <div class="pane">
-        <virtual-scroller #scroll [items]="this.root.paths | filterPipe: this.selectedSubPath">
+        <virtual-scroller #scroll [items]="this.root.paths
+          | filterPipe: this.selectedSubPath : this.recursive">
           <app-thumbnail-component
             *ngFor="let item of scroll.viewPortItems"
             [element]="item"

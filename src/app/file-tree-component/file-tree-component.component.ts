@@ -20,8 +20,7 @@ export class FileTreeComponentComponent implements OnInit {
       console.log('updatedir');
       console.log(node);
       this.dirUpdate.emit(node.data.path + '/' + node.data.name);
-    },
-    useCheckbox: true
+    }
   };
 
   constructor() { }

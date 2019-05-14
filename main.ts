@@ -86,13 +86,18 @@ try {
 }
 
 let angularApp;
+let recursive = false;
 
 ipc.on('just-started', function (event, someMessage) {
   angularApp = event;
 });
 
 ipc.on('update-dir', function (event, subpath) {
-  readDir(subpath, updateRoot);
+  readDir(subpath, recursive, updateRoot);
+});
+
+ipc.on('update-recursive', function (event, newRecursive) {
+  recursive = newRecursive;
 });
 
 ipc.on('new-root', function (event) {
@@ -103,7 +108,7 @@ ipc.on('new-root', function (event) {
       const rootFolder: string = files[0];
       console.log('root folder: %s', rootFolder);
       initDir(rootFolder);
-      readDir('', updateRoot);
+      readDir('', recursive, updateRoot);
     }
   });
 });

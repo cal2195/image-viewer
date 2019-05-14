@@ -6,11 +6,11 @@ import { DirTreeElement } from '../../main-files';
 })
 export class FilterPipePipe implements PipeTransform {
 
-  transform(items: DirTreeElement[], subPath: string): any {
+  transform(items: DirTreeElement[], subPath: string, recursive: boolean): any {
     console.log('filtering by path: %s', subPath);
     return items.filter((item) => {
-      if (item.name.endsWith('.jpg') && item.path === subPath) {
-        return true;
+      if (item.name.endsWith('.jpg')) {
+        return (recursive && item.path.startsWith(subPath)) || (!recursive && item.path === subPath);
       }
       return false;
     });

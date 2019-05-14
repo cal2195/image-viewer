@@ -11,6 +11,7 @@ export class HomeComponent implements OnInit {
 
   root: DirTree = null;
   selectedSubPath: string;
+  recursive = false;
 
   constructor(
     public electronService: ElectronService,
@@ -35,5 +36,11 @@ export class HomeComponent implements OnInit {
 
   public openNewRoot() {
     this.electronService.ipcRenderer.send('new-root');
+  }
+
+  public toggleRecursive() {
+    this.recursive = !this.recursive;
+    this.electronService.ipcRenderer.send('update-recursive', this.recursive);
+
   }
 }
