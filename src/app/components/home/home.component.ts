@@ -1,6 +1,11 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { ElectronService } from '../../providers/electron.service';
 import { DirTree, DirTreeElement } from '../../../../main-files';
+
+export enum KEY_CODE {
+  RIGHT_ARROW = 39,
+  LEFT_ARROW = 37
+}
 
 @Component({
   selector: 'app-home',
@@ -46,5 +51,19 @@ export class HomeComponent implements OnInit {
   public toggleRecursive() {
     this.recursive = !this.recursive;
     this.electronService.ipcRenderer.send('update-recursive', this.recursive);
+  }
+
+  // Listen for key presses
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (event.keyCode === KEY_CODE.RIGHT_ARROW) {
+      if (this.currentImage) {
+        this.currentImage = this.currentImage.next;
+      }
+    } else if (event.keyCode === KEY_CODE.LEFT_ARROW) {
+      if (this.currentImage) {
+        this.currentImage = this.currentImage.prev;
+      }
+    }
   }
 }

@@ -24,6 +24,8 @@ export interface DirTreeElement {
   name: string;
   path: string;
   hash: string;
+  next?: DirTreeElement;
+  prev?: DirTreeElement;
 }
 
 let root: DirTree;

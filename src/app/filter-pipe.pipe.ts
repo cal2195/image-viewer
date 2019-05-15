@@ -10,11 +10,19 @@ export class FilterPipePipe implements PipeTransform {
     if (!items) {
       return;
     }
-    return items.filter((item) => {
+    items = items.filter((item) => {
       if (item.name.endsWith('.jpg')) {
         return (recursive && item.path.startsWith(subPath)) || (!recursive && item.path === subPath);
       }
       return false;
     });
+
+    for (let i = 0; i < items.length; i++) {
+      const current = items[i];
+      current.next = items[i+1];
+      current.prev = items[i-1];
+    }
+
+    return items;
   }
 }
