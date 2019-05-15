@@ -25,7 +25,6 @@ export class HomeComponent implements OnInit {
       this.cdr.detectChanges();
     });
     this.electronService.ipcRenderer.on('thumb-update', (event, hash) => {
-      console.log('thumb update');
       this.thumbUpdate[hash] = true;
       this.cdr.detectChanges();
     });
