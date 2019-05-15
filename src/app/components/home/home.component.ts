@@ -13,6 +13,7 @@ export class HomeComponent implements OnInit {
   selectedSubPath: string;
   recursive = false;
   currentImage: DirTreeElement;
+  thumbUpdate: boolean[] = [];
 
   constructor(
     public electronService: ElectronService,
@@ -21,7 +22,11 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
     this.electronService.ipcRenderer.on('root-update', (event, rootNode) => {
       this.root = rootNode;
-      console.log(this.root);
+      this.cdr.detectChanges();
+    });
+    this.electronService.ipcRenderer.on('thumb-update', (event, hash) => {
+      console.log('thumb update');
+      this.thumbUpdate[hash] = true;
       this.cdr.detectChanges();
     });
     this.justStarted();

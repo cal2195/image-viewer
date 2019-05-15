@@ -48,11 +48,10 @@ function removeBySubpath(subPath: string) {
   });
 }
 
-export function readDir(subPath: string, recursive: boolean, callback: any) {
+export function readDir(subPath: string, recursive: boolean, rootUpdateCallback: any, thumbUpdateCallback: any) {
   console.log('reading dir: %s', path.join(root.rootPath, subPath));
   removeBySubpath(subPath);
   fs.readdir(path.join(root.rootPath, subPath), {encoding: 'utf8', withFileTypes: true}, (err, files) => {
-    console.log(files);
     console.log(err);
     let updated = false;
 
@@ -68,11 +67,17 @@ export function readDir(subPath: string, recursive: boolean, callback: any) {
 
       // gen thumbs
       if (file.isFile() && file.name.endsWith('.jpg')) {
-        thumbQueue.push({ filePath: root.rootPath + subPath + '/' + file.name, hash: entry.hash },
-        function(err) {
-          console.log('finished processing foo');
-          console.log(err);
-      });
+        fs.access(root.cachePath + entry.hash + '.jpg', fs.constants.F_OK, (notExists) => {
+          if (notExists) {
+            console.log('queueing %s', file.name);
+            thumbQueue.push({ filePath: root.rootPath + subPath + '/' + file.name, hash: entry.hash },
+            function(err) {
+                console.log('finished processing foo');
+                console.log(err);
+                thumbUpdateCallback(entry.hash);
+            });
+          }
+        });
       }
 
       // update tree
@@ -82,13 +87,10 @@ export function readDir(subPath: string, recursive: boolean, callback: any) {
         if (dirs.length > 1) {
           for (let i = 0; i < dirs.length; i++) {
             const dir = dirs[i];
-            console.log('looking for %s in %s', dir, parentNode);
             for (let j = 0; j < parentNode.children.length; j++) {
               const child = parentNode.children[j];
-              console.log(child);
               if (child.name === dir) {
                 parentNode = child;
-                console.log('found!');
                 break;
               }
             }
@@ -108,7 +110,7 @@ export function readDir(subPath: string, recursive: boolean, callback: any) {
         }
         updated = true;
         if (recursive) {
-          readDir(subPath + '/' + file.name, recursive, callback);
+          readDir(subPath + '/' + file.name, recursive, rootUpdateCallback, thumbUpdateCallback);
         }
       }
     });
@@ -119,13 +121,10 @@ export function readDir(subPath: string, recursive: boolean, callback: any) {
       if (dirs.length > 1) {
         for (let i = 0; i < dirs.length; i++) {
           const dir = dirs[i];
-          console.log('looking for %s in %s', dir, parentNode);
           for (let j = 0; j < parentNode.children.length; j++) {
             const child = parentNode.children[j];
-            console.log(child);
             if (child.name === dir) {
               parentNode = child;
-              console.log('found!');
               break;
             }
           }
@@ -134,7 +133,7 @@ export function readDir(subPath: string, recursive: boolean, callback: any) {
       parentNode.children = [];
       parentNode.hasChildren = false;
     }
-    callback(root);
+    rootUpdateCallback(root);
   });
 }
 
@@ -153,12 +152,12 @@ const exec = require('child_process').exec;
 
 function generateThumbnail(filePath: string, hash: string, callback) {
   const thumbCommand =
-    'ffmpeg -i "' + filePath + '" -vf scale=w=240:h=240:force_original_aspect_ratio=decrease "' + root.cachePath + hash + '.jpg"';
+    'ffmpeg -y -i "' + filePath + '" -vf scale=w=240:h=240:force_original_aspect_ratio=decrease "' + root.cachePath + hash + '.jpg"';
   console.log(thumbCommand);
   exec(thumbCommand, (err, data, stderr) => {
-    console.log(err);
-    console.log(data);
-    console.log(stderr);
+    // console.log(err);
+    // console.log(data);
+    // console.log(stderr);
     callback();
   });
 }

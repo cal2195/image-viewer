@@ -1,3 +1,7 @@
 <div class='container'>
-  <img class='thumbnail' [src]='this.path' />
+  <div class='thumbnail'
+   [ngStyle]="{
+      'background-image': 'url(' + this.path + '#' + this.thumbUpdate + ')'
+    }"
+    ></div>
 </div>

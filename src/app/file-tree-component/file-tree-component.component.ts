@@ -17,8 +17,6 @@ export class FileTreeComponentComponent implements OnInit {
 
   options = {
     getChildren: (node: any) => {
-      console.log('updatedir');
-      console.log(node);
       this.dirUpdate.emit(node.data.path + '/' + node.data.name);
     }
   };
@@ -29,7 +27,6 @@ export class FileTreeComponentComponent implements OnInit {
   }
 
   pathSelected(event: any) {
-    console.log(event);
     this.changeSubPath.emit(event.node.data.id);
     this.dirUpdate.emit(event.node.data.id);
     event.node.setIsExpanded(true);

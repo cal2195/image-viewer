@@ -11,6 +11,7 @@ export class ThumbnailComponentComponent implements OnInit {
   @Input() element: DirTreeElement;
   @Input() rootFolder: string;
   @Input() cachePath: string;
+  @Input() thumbUpdate: boolean;
 
   path: string;
 
