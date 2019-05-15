@@ -51,6 +51,7 @@ export class HomeComponent implements OnInit {
   public toggleRecursive() {
     this.recursive = !this.recursive;
     this.electronService.ipcRenderer.send('update-recursive', this.recursive);
+    this.updateDir(this.selectedSubPath);
   }
 
   // Listen for key presses
