@@ -18,7 +18,9 @@ export class FileTreeComponentComponent implements OnInit {
   options = {
     getChildren: (node: any) => {
       this.dirUpdate.emit(node.data.path + '/' + node.data.name);
-    }
+    },
+    useVirtualScroll: true,
+    nodeHeight: 24
   };
 
   constructor() { }
