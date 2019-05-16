@@ -154,7 +154,7 @@ const exec = require('child_process').exec;
 
 function generateThumbnail(filePath: string, hash: string, callback) {
   const thumbCommand =
-    'ffmpeg -y -i "' + filePath + '" -vf scale=w=240:h=240:force_original_aspect_ratio=decrease "' + root.cachePath + hash + '.jpg"';
+    ffmpegPath + ' -y -i "' + filePath + '" -vf scale=w=240:h=240:force_original_aspect_ratio=decrease "' + root.cachePath + hash + '.jpg"';
   console.log(thumbCommand);
   exec(thumbCommand, (err, data, stderr) => {
     // console.log(err);

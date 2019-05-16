@@ -28,7 +28,10 @@ export class FileTreeComponentComponent implements OnInit {
 
   pathSelected(event: any) {
     this.changeSubPath.emit(event.node.data.id);
-    this.dirUpdate.emit(event.node.data.id);
+    // otherwise handled by getChildren above
+    if (event.node.children) {
+      this.dirUpdate.emit(event.node.data.id);
+    }
     event.node.setIsExpanded(true);
   }
 }
