@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, HostListener, ViewChild } from '@
 import { ElectronService } from '../../providers/electron.service';
 import { DirTree, DirTreeElement, DirTreeNode } from '../../../../main-files';
 import { FileTreeComponentComponent } from '../../file-tree-component/file-tree-component.component';
+import { VirtualScrollerComponent } from 'ngx-virtual-scroller';
 const async = require('async');
 
 export enum KEY_CODE {
@@ -18,6 +19,8 @@ export class HomeComponent implements OnInit {
 
   @ViewChild(FileTreeComponentComponent)
   private treeview: FileTreeComponentComponent;
+  @ViewChild(VirtualScrollerComponent)
+  private virtualScroller: VirtualScrollerComponent;
 
   updateQueue = async.queue((task, callback) => {
     let newPaths = this.root.paths.slice(0);
@@ -57,6 +60,14 @@ export class HomeComponent implements OnInit {
       this.cdr.detectChanges();
     });
     this.justStarted();
+  }
+
+  changeSubPath(event: string) {
+    const firstItem = this.virtualScroller.viewPortItems[0];
+    console.log(firstItem);
+    this.selectedSubPath = event;
+    this.cdr.detectChanges();
+    this.virtualScroller.scrollInto(firstItem, true, 0, 0);
   }
 
   removeBySubpath(paths: DirTreeElement[], subPath: string): DirTreeElement[] {

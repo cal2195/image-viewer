@@ -62,6 +62,11 @@ export function queueReadDir(subPath: string, recursive: boolean, updateNodeCall
 export function readDir(subPath: string, recursive: boolean, updateNodeCallback: any, thumbUpdateCallback: any) {
   console.log('reading dir: %s', path.join(root.rootPath, subPath));
   fs.readdir(path.join(root.rootPath, subPath), {encoding: 'utf8', withFileTypes: true}, (err, files) => {
+    if (err) {
+      console.log(err);
+      // call refresh?
+      return;
+    }
     console.log('READ dir: %s', path.join(root.rootPath, subPath));
     const dirs = subPath.split('/');
     const parentName = dirs[dirs.length - 1];
@@ -81,7 +86,7 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
       paths.push(entry);
 
       // gen thumbs
-      if (file.isFile() && file.name.endsWith('.jpg')) {
+      if (file.isFile() && file.name.match(/(.jpg|.png|.gif)$/)) {
         fs.access(root.cachePath + entry.hash + '.jpg', fs.constants.F_OK, (notExists) => {
           if (notExists) {
             console.log('queueing %s', file.name);
