@@ -34,8 +34,7 @@ let thumbQueue = async.queue((task, callback) => {
   generateThumbnail(task.filePath, task.hash, callback);
 }, 2);
 let dirQueue = async.queue((task, callback) => {
-  readDir(task.subPath, task.recursive, task.updateNodeCallback, task.thumbUpdateCallback);
-  callback();
+  readDir(task.subPath, task.recursive, task.updateNodeCallback, task.thumbUpdateCallback, callback);
 }, 1);
 
 export function initDir(rootDir: string, updateRootCallback: any) {
@@ -50,8 +49,9 @@ export function initDir(rootDir: string, updateRootCallback: any) {
 }
 
 export function cancelCurrent() {
-  thumbQueue.remove(() => {return true;});
-  dirQueue.remove(() => {return true;});
+  console.log('cancelling current!!!!!!');
+  thumbQueue.remove((dontcare) => {return true;});
+  dirQueue.remove((dontcare) => {return true;});
 }
 
 export function queueReadDir(subPath: string, recursive: boolean, updateNodeCallback: any, thumbUpdateCallback: any) {
@@ -59,9 +59,10 @@ export function queueReadDir(subPath: string, recursive: boolean, updateNodeCall
   dirQueue.push(task, () => {});
 }
 
-export function readDir(subPath: string, recursive: boolean, updateNodeCallback: any, thumbUpdateCallback: any) {
+export function readDir(subPath: string, recursive: boolean, updateNodeCallback: any, thumbUpdateCallback: any, queueCallback: any) {
   console.log('reading dir: %s', path.join(root.rootPath, subPath));
   fs.readdir(path.join(root.rootPath, subPath), {encoding: 'utf8', withFileTypes: true}, (err, files) => {
+    queueCallback();
     if (err) {
       console.log(err);
       // call refresh?
