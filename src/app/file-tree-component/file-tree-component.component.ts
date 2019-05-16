@@ -9,7 +9,7 @@ import { TreeComponent, TreeNode } from 'angular-tree-component';
 })
 export class FileTreeComponentComponent implements OnInit {
   @ViewChild(TreeComponent)
-  private tree: TreeComponent;
+  public tree: TreeComponent;
 
   @Output() dirUpdate = new EventEmitter<string>();
   @Output() changeSubPath = new EventEmitter<string>();

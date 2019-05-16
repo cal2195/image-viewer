@@ -28,6 +28,7 @@
           [dirTree]="this.root.tree"
           (dirUpdate)="updateDir($event)"
           (changeSubPath)="this.selectedSubPath = $event"
+          #treeview
         ></app-file-tree-component>
       </div>
       <div class="pane">

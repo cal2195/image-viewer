@@ -2,7 +2,7 @@ import { app, BrowserWindow, screen } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 
-import { initDir, readDir, DirTree } from './main-files';
+import { initDir, queueReadDir, DirTree, DirTreeNode, DirTreeElement, cancelCurrent } from './main-files';
 
 let win, serve;
 const args = process.argv.slice(1);
@@ -93,7 +93,8 @@ ipc.on('just-started', function (event, someMessage) {
 });
 
 ipc.on('update-dir', function (event, subpath) {
-  readDir(subpath, recursive, updateRoot, thumbUpdate);
+  cancelCurrent();
+  queueReadDir(subpath, recursive, updateNode, thumbUpdate);
 });
 
 ipc.on('update-recursive', function (event, newRecursive) {
@@ -107,16 +108,20 @@ ipc.on('new-root', function (event) {
     if (files) {
       const rootFolder: string = files[0];
       console.log('root folder: %s', rootFolder);
-      initDir(rootFolder);
-      readDir('', recursive, updateRoot, thumbUpdate);
+      initDir(rootFolder, updateRoot);
+      queueReadDir('', recursive, updateNode, thumbUpdate);
     }
   });
 });
+
+function updateRoot(root: DirTree) {
+  angularApp.sender.send('root-init', root);
+}
 
 function thumbUpdate(hash: string) {
   angularApp.sender.send('thumb-update', hash);
 }
 
-function updateRoot(root: DirTree) {
-    angularApp.sender.send('root-update', root);
+function updateNode(parentPath: string, parentNode: DirTreeNode, paths: DirTreeElement[]) {
+  angularApp.sender.send('node-update', parentPath, parentNode, paths);
 }

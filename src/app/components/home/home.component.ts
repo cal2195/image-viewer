@@ -1,6 +1,8 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener, ViewChild } from '@angular/core';
 import { ElectronService } from '../../providers/electron.service';
-import { DirTree, DirTreeElement } from '../../../../main-files';
+import { DirTree, DirTreeElement, DirTreeNode } from '../../../../main-files';
+import { FileTreeComponentComponent } from '../../file-tree-component/file-tree-component.component';
+const async = require('async');
 
 export enum KEY_CODE {
   RIGHT_ARROW = 39,
@@ -14,6 +16,18 @@ export enum KEY_CODE {
 })
 export class HomeComponent implements OnInit {
 
+  @ViewChild(FileTreeComponentComponent)
+  private treeview: FileTreeComponentComponent;
+
+  updateQueue = async.queue((task, callback) => {
+    let newPaths = this.root.paths.slice(0);
+    newPaths = this.removeBySubpath(newPaths, task.parentPath + '/' + task.parentNode.name);
+    newPaths = newPaths.concat(task.paths);
+    this.root.paths = newPaths;
+    this.insertUpdatedNode(task.parentPath, task.parentNode);
+    callback();
+  }, 1);
+
   root: DirTree = null;
   selectedSubPath: string;
   recursive = false;
@@ -25,15 +39,79 @@ export class HomeComponent implements OnInit {
     private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
-    this.electronService.ipcRenderer.on('root-update', (event, rootNode) => {
-      this.root = rootNode;
+    this.updateQueue.drain = () => {
+      this.treeview.tree.treeModel.update();
       this.cdr.detectChanges();
+    }
+    this.electronService.ipcRenderer.on('root-init', (event, root) => {
+      this.root = root;
+      this.cdr.detectChanges();
+    });
+    this.electronService.ipcRenderer.on('node-update', (event, parentPath, parentNode, paths) => {
+      const task = {parentPath: parentPath, parentNode: parentNode, paths: paths};
+      this.updateQueue.push(task, () => {
+      });
     });
     this.electronService.ipcRenderer.on('thumb-update', (event, hash) => {
       this.thumbUpdate[hash] = true;
       this.cdr.detectChanges();
     });
     this.justStarted();
+  }
+
+  removeBySubpath(paths: DirTreeElement[], subPath: string): DirTreeElement[] {
+    paths = paths.filter((element) => {
+      return element.path !== subPath;
+    });
+    return paths;
+  }
+
+  insertUpdatedNode(parentPath: string, parentNode: DirTreeNode) {
+    const dirs = parentPath.split('/');
+    let currentNode = this.root.tree[0];
+    if (dirs.length > 1) {
+      for (let i = 0; i < dirs.length; i++) {
+        const dir = dirs[i];
+        for (let j = 0; j < currentNode.children.length; j++) {
+          const child = currentNode.children[j];
+          if (child.name === dir) {
+            currentNode = child;
+            break;
+          }
+        }
+      }
+    }
+    if (!currentNode.children) {
+      currentNode.children = [];
+    }
+    let exists = false;
+    for (let i = 0; i < currentNode.children.length; i++) {
+      const element = currentNode.children[i];
+      if (element.name === parentNode.name) {
+        exists = true;
+        if (element.children) {
+          for (let j = 0; j < element.children.length; j++) {
+            const child = element.children[j];
+            for (let k = 0; k < parentNode.children.length; k++) {
+              const parentChild = parentNode.children[k];
+              if (child.name === parentChild.name) {
+                parentNode.children[k] = child;
+              }
+            }
+          }
+        }
+        currentNode.children[i] = parentNode;
+        break;
+      }
+    }
+    if (!exists) {
+      if (currentNode === this.root.tree[0]) {
+        parentNode.name = 'root';
+        this.root.tree[0] = parentNode;
+      } else {
+        currentNode.children.push(parentNode);
+      }
+    }
   }
 
   public justStarted() {

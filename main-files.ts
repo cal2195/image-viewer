@@ -7,13 +7,13 @@ export interface DirTree {
   rootPath: string;
   cachePath: string;
   paths: DirTreeElement[];
-  tree: [TreeNode];
+  tree: [DirTreeNode];
 }
 
-export interface TreeNode {
+export interface DirTreeNode {
   id: string;
   name: string;
-  children?: TreeNode[];
+  children?: DirTreeNode[];
   hasChildren?: boolean;
   isExpanded?: boolean;
   path: string;
@@ -33,8 +33,12 @@ let thumbQueue = async.queue((task, callback) => {
   console.log('starting %s', task);
   generateThumbnail(task.filePath, task.hash, callback);
 }, 2);
+let dirQueue = async.queue((task, callback) => {
+  readDir(task.subPath, task.recursive, task.updateNodeCallback, task.thumbUpdateCallback);
+  callback();
+}, 1);
 
-export function initDir(rootDir: string) {
+export function initDir(rootDir: string, updateRootCallback: any) {
   const homedir = require('os').homedir();
   const cachePath = homedir + '/.imageviewer/';
   try {
@@ -42,20 +46,29 @@ export function initDir(rootDir: string) {
   } catch (e) {}
   root = { rootPath: rootDir, cachePath: cachePath,
     paths: [], tree: [{ id: '', name: 'root', path: '', children: [], isExpanded: true }] };
+  updateRootCallback(root);
 }
 
-function removeBySubpath(subPath: string) {
-  root.paths = root.paths.filter((element) => {
-    return element.path !== subPath;
-  });
+export function cancelCurrent() {
+  thumbQueue.remove(() => {return true;});
+  dirQueue.remove(() => {return true;});
 }
 
-export function readDir(subPath: string, recursive: boolean, rootUpdateCallback: any, thumbUpdateCallback: any) {
+export function queueReadDir(subPath: string, recursive: boolean, updateNodeCallback: any, thumbUpdateCallback: any) {
+  const task = {subPath: subPath, recursive: recursive, updateNodeCallback: updateNodeCallback, thumbUpdateCallback: thumbUpdateCallback};
+  dirQueue.push(task, () => {});
+}
+
+export function readDir(subPath: string, recursive: boolean, updateNodeCallback: any, thumbUpdateCallback: any) {
   console.log('reading dir: %s', path.join(root.rootPath, subPath));
-  removeBySubpath(subPath);
   fs.readdir(path.join(root.rootPath, subPath), {encoding: 'utf8', withFileTypes: true}, (err, files) => {
-    console.log(err);
-    let updated = false;
+    console.log('READ dir: %s', path.join(root.rootPath, subPath));
+    const dirs = subPath.split('/');
+    const parentName = dirs[dirs.length - 1];
+    const parentPath = dirs.slice(0, dirs.length - 1).join('/');
+    const parentNode: DirTreeNode = { id: subPath, name: parentName, path: parentPath };
+    parentNode.children = [];
+    const paths = [];
 
     // tslint:disable-next-line:forin
     files.forEach(file => {
@@ -65,7 +78,7 @@ export function readDir(subPath: string, recursive: boolean, rootUpdateCallback:
         path: subPath,
         hash: hashString(root.rootPath + subPath + '/' + file.name)
       };
-      root.paths.push(entry);
+      paths.push(entry);
 
       // gen thumbs
       if (file.isFile() && file.name.endsWith('.jpg')) {
@@ -75,7 +88,6 @@ export function readDir(subPath: string, recursive: boolean, rootUpdateCallback:
             thumbQueue.push({ filePath: root.rootPath + subPath + '/' + file.name, hash: entry.hash },
             function(err) {
                 console.log('finished processing foo');
-                console.log(err);
                 thumbUpdateCallback(entry.hash);
             });
           }
@@ -84,58 +96,43 @@ export function readDir(subPath: string, recursive: boolean, rootUpdateCallback:
 
       // update tree
       if (file.isDirectory() && !file.name.startsWith('.')) {
-        const dirs = subPath.split('/');
-        let parentNode = root.tree[0];
-        if (dirs.length > 1) {
-          for (let i = 0; i < dirs.length; i++) {
-            const dir = dirs[i];
-            for (let j = 0; j < parentNode.children.length; j++) {
-              const child = parentNode.children[j];
-              if (child.name === dir) {
-                parentNode = child;
-                break;
-              }
-            }
-          }
-        }
-        if (!parentNode.children) {
-          parentNode.children = [];
-        }
-        let exists = false;
-        parentNode.children.forEach(element => {
-          if (element.id === subPath + '/' + file.name) {
-            exists = true;
-          }
-        });
-        if (!exists) {
-          parentNode.children.push({ id: subPath + '/' + file.name, name: file.name, path: subPath, hasChildren: true });
-        }
-        updated = true;
+        parentNode.children.push({ id: subPath + '/' + file.name, name: file.name, path: subPath, hasChildren: true });
         if (recursive) {
-          readDir(subPath + '/' + file.name, recursive, rootUpdateCallback, thumbUpdateCallback);
+          queueReadDir(subPath + '/' + file.name, recursive, updateNodeCallback, thumbUpdateCallback);
         }
+        // const dirs = subPath.split('/');
+        // let parentNode = root.tree[0];
+        // if (dirs.length > 1) {
+        //   for (let i = 0; i < dirs.length; i++) {
+        //     const dir = dirs[i];
+        //     for (let j = 0; j < parentNode.children.length; j++) {
+        //       const child = parentNode.children[j];
+        //       if (child.name === dir) {
+        //         parentNode = child;
+        //         break;
+        //       }
+        //     }
+        //   }
+        // }
+        // if (!parentNode.children) {
+        //   parentNode.children = [];
+        // }
+        // let exists = false;
+        // parentNode.children.forEach(element => {
+        //   if (element.id === subPath + '/' + file.name) {
+        //     exists = true;
+        //   }
+        // });
+        // if (!exists) {
+        //   parentNode.children.push({ id: subPath + '/' + file.name, name: file.name, path: subPath, hasChildren: true });
+        // }
+        // updated = true;
+        // if (recursive) {
+        //   readDir(subPath + '/' + file.name, recursive, rootUpdateCallback, thumbUpdateCallback);
+        // }
       }
     });
-
-    if (files.length === 0 || !updated) {
-      const dirs = subPath.split('/');
-      let parentNode = root.tree[0];
-      if (dirs.length > 1) {
-        for (let i = 0; i < dirs.length; i++) {
-          const dir = dirs[i];
-          for (let j = 0; j < parentNode.children.length; j++) {
-            const child = parentNode.children[j];
-            if (child.name === dir) {
-              parentNode = child;
-              break;
-            }
-          }
-        }
-      }
-      parentNode.children = [];
-      parentNode.hasChildren = false;
-    }
-    rootUpdateCallback(root);
+    updateNodeCallback(parentPath, parentNode, paths);
   });
 }
 
