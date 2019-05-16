@@ -56,7 +56,7 @@ export function cancelCurrent() {
 
 export function queueReadDir(subPath: string, recursive: boolean, updateNodeCallback: any, thumbUpdateCallback: any) {
   const task = {subPath: subPath, recursive: recursive, updateNodeCallback: updateNodeCallback, thumbUpdateCallback: thumbUpdateCallback};
-  dirQueue.push(task, () => {});
+  dirQueue.unshift(task, () => {});
 }
 
 export function readDir(subPath: string, recursive: boolean, updateNodeCallback: any, thumbUpdateCallback: any, queueCallback: any) {
@@ -77,7 +77,7 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
     const paths = [];
 
     // tslint:disable-next-line:forin
-    files.forEach(file => {
+    files.reverse().forEach(file => {
       const entry: DirTreeElement = {
         folder: file.isDirectory(),
         name: file.name,
@@ -138,6 +138,7 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
         // }
       }
     });
+    parentNode.children = parentNode.children.reverse();
     updateNodeCallback(parentPath, parentNode, paths);
   });
 }

@@ -22,14 +22,19 @@ export class HomeComponent implements OnInit {
   @ViewChild(VirtualScrollerComponent)
   private virtualScroller: VirtualScrollerComponent;
 
-  updateQueue = async.queue((task, callback) => {
+  updateQueue = async.queue(async (task, callback) => {
     let newPaths = this.root.paths.slice(0);
     newPaths = this.removeBySubpath(newPaths, task.parentPath + '/' + task.parentNode.name);
     newPaths = newPaths.concat(task.paths);
     this.root.paths = newPaths;
     this.insertUpdatedNode(task.parentPath, task.parentNode);
+    await this.sleep(20);
     callback();
   }, 1);
+
+  sleep(millis) {
+    return new Promise(resolve => setTimeout(resolve, millis));
+  }
 
   root: DirTree = null;
   selectedSubPath: string;
@@ -44,6 +49,7 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
     this.updateQueue.drain = () => {
       this.treeview.tree.treeModel.update();
+      console.log('updating screen');
       this.cdr.detectChanges();
     }
     this.electronService.ipcRenderer.on('root-init', (event, root) => {
