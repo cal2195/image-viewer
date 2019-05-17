@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-var async = require("async");
+const async = require('async');
 
 export interface DirTree {
   rootPath: string;
@@ -28,6 +28,8 @@ export interface DirTreeElement {
   prev?: DirTreeElement;
   tags?: string;
 }
+
+export const imageRegex = /(.jpg|.png|.gif)$/;
 
 let root: DirTree;
 let thumbQueue = async.queue((task, callback) => {
@@ -94,6 +96,9 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
 
     // tslint:disable-next-line:forin
     files.forEach(file => {
+      if (file.isFile() && !file.name.match(imageRegex)) {
+        return;
+      }
       const entry: DirTreeElement = {
         folder: file.isDirectory(),
         name: file.name,
@@ -105,7 +110,7 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
       });
 
       // gen thumbs
-      if (file.isFile() && file.name.match(/(.jpg|.png|.gif)$/)) {
+      if (file.isFile() && file.name.match(imageRegex)) {
         fs.access(root.cachePath + entry.hash + '.jpg', fs.constants.F_OK, (notExists) => {
           if (notExists) {
             console.log('queueing %s', file.name);

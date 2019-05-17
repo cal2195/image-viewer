@@ -1,6 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { DirTreeElement } from '../../main-files';
-import { analyzeAndValidateNgModules } from '@angular/compiler';
+import { DirTreeElement, imageRegex } from '../../main-files';
 
 @Pipe({
   name: 'filterPipe'
@@ -12,7 +11,7 @@ export class FilterPipePipe implements PipeTransform {
       return;
     }
     items = items.filter((item) => {
-      if (item.name.match(/(.jpg|.png|.gif)$/)) {
+      if (item.name.match(imageRegex)) {
         return (recursive && item.path.startsWith(subPath)) || (!recursive && item.path === subPath);
       }
       return false;
