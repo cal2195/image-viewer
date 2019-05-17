@@ -13,34 +13,40 @@ export class TagFilterPipePipe implements PipeTransform {
     const searchTags = tags.split(' ');
     return items.filter((item) => {
       if (item.tags) {
-        let atLeastOne = false;
-        for (let i = 0; i < searchTags.length; i++) {
-          const tag = searchTags[i];
-          if (tag === '' || tag === '-') {
-            continue;
-          }
-          if (tag.charAt(0) === '+') {
-            // console.log('must include %s', tag);
-            atLeastOne = true;
-            if (item.tags.indexOf(tag.substring(1)) === -1) {
-              return false;
-            }
-          } else if (tag.charAt(0) === '-') {
-            // console.log('must not include %s', tag);
-            atLeastOne = true;
-            if (item.tags.indexOf(tag.substring(1)) !== -1) {
-              return false;
-            }
-          } else {
-            // console.log('can include %s', tag);
-            if (item.tags.indexOf(tag) !== -1) {
-              atLeastOne = true;
-            }
-          }
-        }
-        return atLeastOne;
+        return this.hasTag(item.tags, searchTags);
+      } else {
+        return this.hasTag(item.path + '/' + item.name, searchTags);
       }
       return false;
     });
+  }
+
+  hasTag(entryTags: string, searchTags: string[]): boolean {
+    let atLeastOne = false;
+    for (let i = 0; i < searchTags.length; i++) {
+      const tag = searchTags[i];
+      if (tag === '' || tag === '-') {
+        continue;
+      }
+      if (tag.charAt(0) === '+') {
+        // console.log('must include %s', tag);
+        atLeastOne = true;
+        if (entryTags.indexOf(tag.substring(1)) === -1) {
+          return false;
+        }
+      } else if (tag.charAt(0) === '-') {
+        // console.log('must not include %s', tag);
+        atLeastOne = true;
+        if (entryTags.indexOf(tag.substring(1)) !== -1) {
+          return false;
+        }
+      } else {
+        // console.log('can include %s', tag);
+        if (entryTags.indexOf(tag) !== -1) {
+          atLeastOne = true;
+        }
+      }
+    }
+    return atLeastOne;
   }
 }
