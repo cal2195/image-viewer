@@ -57,12 +57,14 @@ export class HomeComponent implements OnInit {
   resetTreeTimer() {
     setTimeout(() => {
       if (this.dirtyTree) {
+        //const firstItem = this.virtualScroller.viewPortItems[0];
         this.dirtyTree = false;
         this.displayTreeRoot = this.root.tree;
         this.displayPaths = this.root.paths;
         this.treeview.tree.treeModel.update();
         console.log('updating screen');
         this.cdr.detectChanges();
+        //this.virtualScroller.scrollInto(firstItem, true, 10, 0);
       }
       this.resetTreeTimer();
     }, 1000);

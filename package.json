@@ -85,6 +85,6 @@
     "@ffmpeg-installer/ffmpeg": "^1.0.17",
     "angular-tree-component": "^8.3.0",
     "async": "^2.6.2",
-    "ngx-virtual-scroller": "^2.1.0"
+    "ngx-virtual-scroller": "^3.0.0"
   }
 }
