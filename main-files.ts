@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-var async = require("async");
+const async = require('async');
 
 export interface DirTree {
   rootPath: string;
@@ -26,7 +26,10 @@ export interface DirTreeElement {
   hash: string;
   next?: DirTreeElement;
   prev?: DirTreeElement;
+  tags?: string;
 }
+
+export const imageRegex = /(.jpg|.png|.gif)$/;
 
 let root: DirTree;
 let thumbQueue = async.queue((task, callback) => {
@@ -59,8 +62,29 @@ export function queueReadDir(subPath: string, recursive: boolean, updateNodeCall
   dirQueue.unshift(task, () => {});
 }
 
+function insertTags(entry: DirTreeElement, callback: any) {
+  try {
+    console.log('inserting tags for %s', entry.name);
+    fs.readFile(root.rootPath + entry.path + '/' + entry.name + '.tags', 'utf8', (err, data) => {
+      if (!err) {
+        entry.tags = data;
+      }
+      callback(null, entry);
+    });
+  } catch (e) {
+    console.log(e);
+    callback(null, entry);
+  }
+}
+
 export function readDir(subPath: string, recursive: boolean, updateNodeCallback: any, thumbUpdateCallback: any, queueCallback: any) {
   console.log('reading dir: %s', path.join(root.rootPath, subPath));
+  const dirs = subPath.split('/');
+  const parentName = dirs[dirs.length - 1];
+  const parentPath = dirs.slice(0, dirs.length - 1).join('/');
+  const parentNode: DirTreeNode = { id: subPath, name: parentName, path: parentPath };
+  const toGetTags = [];
+
   fs.readdir(path.join(root.rootPath, subPath), {encoding: 'utf8', withFileTypes: true}, (err, files) => {
     queueCallback();
     if (err) {
@@ -69,25 +93,25 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
       return;
     }
     console.log('READ dir: %s', path.join(root.rootPath, subPath));
-    const dirs = subPath.split('/');
-    const parentName = dirs[dirs.length - 1];
-    const parentPath = dirs.slice(0, dirs.length - 1).join('/');
-    const parentNode: DirTreeNode = { id: subPath, name: parentName, path: parentPath };
     parentNode.children = [];
-    const paths = [];
 
     // tslint:disable-next-line:forin
-    files.reverse().forEach(file => {
+    files.forEach(file => {
+      if (file.isFile() && !file.name.match(imageRegex)) {
+        return;
+      }
       const entry: DirTreeElement = {
         folder: file.isDirectory(),
         name: file.name,
         path: subPath,
         hash: hashString(root.rootPath + subPath + '/' + file.name)
       };
-      paths.push(entry);
+      toGetTags.push((callback) => {
+        insertTags(entry, callback);
+      });
 
       // gen thumbs
-      if (file.isFile() && file.name.match(/(.jpg|.png|.gif)$/)) {
+      if (file.isFile() && file.name.match(imageRegex)) {
         fs.access(root.cachePath + entry.hash + '.jpg', fs.constants.F_OK, (notExists) => {
           if (notExists) {
             console.log('queueing %s', file.name);
@@ -138,8 +162,9 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
         // }
       }
     });
-    parentNode.children = parentNode.children.reverse();
-    updateNodeCallback(parentPath, parentNode, paths);
+    async.series(toGetTags, (err, paths) => {
+      updateNodeCallback(parentPath, parentNode, paths);
+    });
   });
 }
 
