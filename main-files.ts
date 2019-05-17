@@ -26,6 +26,7 @@ export interface DirTreeElement {
   hash: string;
   next?: DirTreeElement;
   prev?: DirTreeElement;
+  tags?: string;
 }
 
 let root: DirTree;
@@ -59,8 +60,29 @@ export function queueReadDir(subPath: string, recursive: boolean, updateNodeCall
   dirQueue.push(task, () => {});
 }
 
+function insertTags(entry: DirTreeElement, callback: any) {
+  try {
+    console.log('inserting tags for %s', entry.name);
+    fs.readFile(root.rootPath + entry.path + '/' + entry.name + '.tags', 'utf8', (err, data) => {
+      if (!err) {
+        entry.tags = data;
+      }
+      callback(null, entry);
+    });
+  } catch (e) {
+    console.log(e);
+    callback(null, entry);
+  }
+}
+
 export function readDir(subPath: string, recursive: boolean, updateNodeCallback: any, thumbUpdateCallback: any) {
   console.log('reading dir: %s', path.join(root.rootPath, subPath));
+  const dirs = subPath.split('/');
+  const parentName = dirs[dirs.length - 1];
+  const parentPath = dirs.slice(0, dirs.length - 1).join('/');
+  const parentNode: DirTreeNode = { id: subPath, name: parentName, path: parentPath };
+  const toGetTags = [];
+
   fs.readdir(path.join(root.rootPath, subPath), {encoding: 'utf8', withFileTypes: true}, (err, files) => {
     if (err) {
       console.log(err);
@@ -68,12 +90,7 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
       return;
     }
     console.log('READ dir: %s', path.join(root.rootPath, subPath));
-    const dirs = subPath.split('/');
-    const parentName = dirs[dirs.length - 1];
-    const parentPath = dirs.slice(0, dirs.length - 1).join('/');
-    const parentNode: DirTreeNode = { id: subPath, name: parentName, path: parentPath };
     parentNode.children = [];
-    const paths = [];
 
     // tslint:disable-next-line:forin
     files.forEach(file => {
@@ -83,7 +100,9 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
         path: subPath,
         hash: hashString(root.rootPath + subPath + '/' + file.name)
       };
-      paths.push(entry);
+      toGetTags.push((callback) => {
+        insertTags(entry, callback);
+      });
 
       // gen thumbs
       if (file.isFile() && file.name.match(/(.jpg|.png|.gif)$/)) {
@@ -137,7 +156,9 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
         // }
       }
     });
-    updateNodeCallback(parentPath, parentNode, paths);
+    async.series(toGetTags, (err, paths) => {
+      updateNodeCallback(parentPath, parentNode, paths);
+    });
   });
 }
 
