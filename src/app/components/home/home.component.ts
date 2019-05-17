@@ -3,6 +3,7 @@ import { ElectronService } from '../../providers/electron.service';
 import { DirTree, DirTreeElement, DirTreeNode } from '../../../../main-files';
 import { FileTreeComponentComponent } from '../../file-tree-component/file-tree-component.component';
 import { VirtualScrollerComponent } from 'ngx-virtual-scroller';
+import { rootRenderNodes } from '@angular/core/src/view';
 const async = require('async');
 
 export enum KEY_CODE {
@@ -28,7 +29,7 @@ export class HomeComponent implements OnInit {
     newPaths = newPaths.concat(task.paths);
     this.root.paths = newPaths;
     this.insertUpdatedNode(task.parentPath, task.parentNode);
-    await this.sleep(20);
+    this.dirtyTree = true;
     callback();
   }, 1);
 
@@ -37,6 +38,9 @@ export class HomeComponent implements OnInit {
   }
 
   root: DirTree = null;
+  displayTreeRoot: DirTreeNode[];
+  displayPaths: DirTreeElement[];
+  dirtyTree = false;
   selectedSubPath: string;
   recursive = false;
   currentImage: DirTreeElement;
@@ -48,23 +52,38 @@ export class HomeComponent implements OnInit {
     public electronService: ElectronService,
     private cdr: ChangeDetectorRef) {}
 
-  ngOnInit() {
-    // window.onbeforeunload = (e) => {
-    //   console.log('I do not want to be closed');
+  resetTreeTimer() {
+    setTimeout(() => {
+      if (this.dirtyTree) {
+        this.dirtyTree = false;
+        this.displayTreeRoot = this.root.tree;
+        this.displayPaths = this.root.paths;
+        this.treeview.tree.treeModel.update();
+        console.log('updating screen');
+        this.cdr.detectChanges();
+      }
+      this.resetTreeTimer();
+    }, 1000);
+  }
 
-    //   // Unlike usual browsers that a message box will be prompted to users, returning
-    //   // a non-void value will silently cancel the close.
-    //   // It is recommended to use the dialog API to let the user confirm closing the
-    //   // application.
-    //   e.returnValue = false; // equivalent to `return false` but not recommended
-    // };
-    this.updateQueue.drain = () => {
-      this.treeview.tree.treeModel.update();
-      console.log('updating screen');
-      this.cdr.detectChanges();
-    }
+
+  ngOnInit() {
+    window.onbeforeunload = (e) => {
+      console.log('I do not want to be closed');
+
+      this.electronService.ipcRenderer.send('save-root-file', this.root);
+      e.returnValue = false; // equivalent to `return false` but not recommended
+    };
+    // this.updateQueue.drain = () => {
+    //   this.treeview.tree.treeModel.update();
+    //   console.log('updating screen');
+    //   this.cdr.detectChanges();
+    // }
     this.electronService.ipcRenderer.on('root-init', (event, root) => {
       this.root = root;
+      this.displayTreeRoot = this.root.tree;
+      this.displayPaths = this.root.paths;
+      this.resetTreeTimer();
       this.cdr.detectChanges();
     });
     this.electronService.ipcRenderer.on('node-update', (event, parentPath, parentNode, paths) => {

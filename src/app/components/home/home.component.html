@@ -31,16 +31,16 @@
     <div class="pane-group">
       <div class="pane-sm sidebar">
         <app-file-tree-component
-          *ngIf="this.root"
-          [dirTree]="this.root.tree"
+          *ngIf="this.displayTreeRoot"
+          [dirTree]="this.displayTreeRoot"
           (dirUpdate)="updateDir($event)"
           (changeSubPath)="changeSubPath($event)"
           #treeview
         ></app-file-tree-component>
       </div>
       <div class="pane">
-        <virtual-scroller *ngIf="this.root"
-          #scroll [items]="this.root.paths
+        <virtual-scroller *ngIf="this.displayPaths"
+          #scroll [items]="this.displayPaths
           | filterPipe: this.selectedSubPath : this.recursive
           | tagFilterPipe: this.searchString"
           [childHeight]='206'>

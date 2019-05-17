@@ -20,7 +20,7 @@ export interface DirTreeNode {
 }
 
 export interface DirTreeElement {
-  folder: string;
+  folder: boolean;
   name: string;
   path: string;
   hash: string;
@@ -31,18 +31,19 @@ export interface DirTreeElement {
 
 export const imageRegex = /(.jpg|.png|.gif)$/;
 
+const homedir = require('os').homedir();
+const cachePath = homedir + '/.imageviewer/';
+
 let root: DirTree;
 let thumbQueue = async.queue((task, callback) => {
   console.log('starting %s', task);
   generateThumbnail(task.filePath, task.hash, callback);
-}, 2);
+}, 8);
 let dirQueue = async.queue((task, callback) => {
   readDir(task.subPath, task.recursive, task.updateNodeCallback, task.thumbUpdateCallback, callback);
-}, 1);
+}, 16);
 
 export function initDir(rootDir: string, updateRootCallback: any) {
-  const homedir = require('os').homedir();
-  const cachePath = homedir + '/.imageviewer/';
   try {
     fs.mkdirSync(cachePath);
   } catch (e) {}
@@ -63,6 +64,9 @@ export function queueReadDir(subPath: string, recursive: boolean, updateNodeCall
 }
 
 function insertTags(entry: DirTreeElement, callback: any) {
+  if (entry.folder) {
+    return callback(null, entry);
+  }
   try {
     console.log('inserting tags for %s', entry.name);
     fs.readFile(root.rootPath + entry.path + '/' + entry.name + '.tags', 'utf8', (err, data) => {
@@ -115,7 +119,7 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
         fs.access(root.cachePath + entry.hash + '.jpg', fs.constants.F_OK, (notExists) => {
           if (notExists) {
             console.log('queueing %s', file.name);
-            thumbQueue.push({ filePath: root.rootPath + subPath + '/' + file.name, hash: entry.hash },
+            thumbQueue.unshift({ filePath: root.rootPath + subPath + '/' + file.name, hash: entry.hash },
             function(err) {
                 console.log('finished processing foo');
                 thumbUpdateCallback(entry.hash);
@@ -173,7 +177,7 @@ function hashString(str: string): string {
   return hash;
 }
 
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffmpegPath = "ffmpeg";//require('@ffmpeg-installer/ffmpeg').path;
 // sends data back as a stream as process runs
 // requires an array of args
 const spawn = require('child_process').spawn;
@@ -190,5 +194,21 @@ function generateThumbnail(filePath: string, hash: string, callback) {
     // console.log(data);
     // console.log(stderr);
     callback();
+  });
+}
+
+export function writeRootToDisk(saveRoot: DirTree, callback: any) {
+  const json = JSON.stringify(saveRoot);
+  fs.writeFile(cachePath + '/cached.dir', json, 'utf8', callback);
+}
+
+export function readDiskToRoot(callback: any) {
+  fs.readFile(cachePath + '/cached.dir', (err, data) => {
+    if (err) {
+      callback();
+    } else {
+      root = JSON.parse(data);
+      callback(root);
+    }
   });
 }

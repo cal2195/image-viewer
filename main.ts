@@ -2,7 +2,7 @@ import { app, BrowserWindow, screen } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 
-import { initDir, queueReadDir, DirTree, DirTreeNode, DirTreeElement, cancelCurrent } from './main-files';
+import { initDir, queueReadDir, DirTree, DirTreeNode, DirTreeElement, cancelCurrent, writeRootToDisk, readDiskToRoot } from './main-files';
 
 let win, serve;
 const args = process.argv.slice(1);
@@ -56,6 +56,8 @@ function createWindow() {
 
 }
 
+let angularApp;
+
 try {
 
   // This method will be called when Electron has finished
@@ -85,11 +87,23 @@ try {
   // throw e;
 }
 
-let angularApp;
 let recursive = false;
 
 ipc.on('just-started', function (event, someMessage) {
   angularApp = event;
+  readDiskToRoot((root) => {
+    if (root) {
+      updateRoot(root);
+    }
+  });
+});
+
+ipc.on('save-root-file', function (event, root) {
+  cancelCurrent();
+  writeRootToDisk(root, () => {
+    console.log('cached dir written!');
+    //app.quit();
+  });
 });
 
 ipc.on('update-dir', function (event, subpath) {

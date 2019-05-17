@@ -20,19 +20,19 @@ export class TagFilterPipePipe implements PipeTransform {
             continue;
           }
           if (tag.charAt(0) === '+') {
-            console.log('must include %s', tag);
+            // console.log('must include %s', tag);
             atLeastOne = true;
             if (item.tags.indexOf(tag.substring(1)) === -1) {
               return false;
             }
           } else if (tag.charAt(0) === '-') {
-            console.log('must not include %s', tag);
+            // console.log('must not include %s', tag);
             atLeastOne = true;
             if (item.tags.indexOf(tag.substring(1)) !== -1) {
               return false;
             }
           } else {
-            console.log('can include %s', tag);
+            // console.log('can include %s', tag);
             if (item.tags.indexOf(tag) !== -1) {
               atLeastOne = true;
             }
