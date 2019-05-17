@@ -24,6 +24,7 @@ import { HomeComponent } from './components/home/home.component';
 import { FileTreeComponentComponent } from './file-tree-component/file-tree-component.component';
 import { ThumbnailComponentComponent } from './thumbnail-component/thumbnail-component.component';
 import { FilterPipePipe } from './filter-pipe.pipe';
+import { TagFilterPipePipe } from './tag-filter-pipe.pipe';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -37,7 +38,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     WebviewDirective,
     FileTreeComponentComponent,
     ThumbnailComponentComponent,
-    FilterPipePipe
+    FilterPipePipe,
+    TagFilterPipePipe
   ],
   imports: [
     BrowserModule,
