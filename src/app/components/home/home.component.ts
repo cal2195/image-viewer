@@ -1,9 +1,9 @@
 import { Component, OnInit, ChangeDetectorRef, HostListener, ViewChild } from '@angular/core';
 import { ElectronService } from '../../providers/electron.service';
 import { DirTree, DirTreeElement, DirTreeNode } from '../../../../main-files';
+import { removeBySubpath, insertUpdatedNode } from '../../../../main-shared';
 import { FileTreeComponentComponent } from '../../file-tree-component/file-tree-component.component';
 import { VirtualScrollerComponent } from 'ngx-virtual-scroller';
-import { rootRenderNodes } from '@angular/core/src/view';
 const async = require('async');
 
 export enum KEY_CODE {
@@ -25,17 +25,18 @@ export class HomeComponent implements OnInit {
 
   updateQueue = async.queue(async (task, callback) => {
     let newPaths = this.root.paths.slice(0);
-    newPaths = this.removeBySubpath(newPaths, task.parentPath + '/' + task.parentNode.name);
+    newPaths = removeBySubpath(newPaths, task.parentPath + '/' + task.parentNode.name);
     newPaths = newPaths.concat(task.paths);
     this.root.paths = newPaths;
-    this.insertUpdatedNode(task.parentPath, task.parentNode);
+    insertUpdatedNode(this.root, task.parentPath, task.parentNode);
     this.dirtyTree = true;
     callback();
   }, 1);
 
-  sleep(millis) {
-    return new Promise(resolve => setTimeout(resolve, millis));
-  }
+  saveAndExitQueue = async.queue(async (task, callback) => {
+    this.electronService.ipcRenderer.send('save-root-file', this.root);
+    callback();
+  }, 1);
 
   root: DirTree = null;
   displayTreeRoot: DirTreeNode[];
@@ -47,6 +48,7 @@ export class HomeComponent implements OnInit {
   thumbUpdate: boolean[] = [];
 
   searchString = '';
+  saved = false;
 
   constructor(
     public electronService: ElectronService,
@@ -69,16 +71,21 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     window.onbeforeunload = (e) => {
-      console.log('I do not want to be closed');
-
-      this.electronService.ipcRenderer.send('save-root-file', this.root);
-      e.returnValue = false; // equivalent to `return false` but not recommended
+      if (!this.saved) {
+        console.log('I do not want to be closed');
+        this.electronService.ipcRenderer.send('save-root-file');
+        e.returnValue = false; // equivalent to `return false` but not recommended
+      }
     };
     // this.updateQueue.drain = () => {
     //   this.treeview.tree.treeModel.update();
     //   console.log('updating screen');
     //   this.cdr.detectChanges();
     // }
+    this.electronService.ipcRenderer.on('write-done', (event) => {
+      this.saved = true;
+      window.close();
+    });
     this.electronService.ipcRenderer.on('root-init', (event, root) => {
       this.root = root;
       this.displayTreeRoot = this.root.tree;
@@ -105,61 +112,6 @@ export class HomeComponent implements OnInit {
     this.selectedSubPath = event;
     this.cdr.detectChanges();
     this.virtualScroller.scrollInto(firstItem, true, 0, 0);
-  }
-
-  removeBySubpath(paths: DirTreeElement[], subPath: string): DirTreeElement[] {
-    paths = paths.filter((element) => {
-      return element.path !== subPath;
-    });
-    return paths;
-  }
-
-  insertUpdatedNode(parentPath: string, parentNode: DirTreeNode) {
-    const dirs = parentPath.split('/');
-    let currentNode = this.root.tree[0];
-    if (dirs.length > 1) {
-      for (let i = 0; i < dirs.length; i++) {
-        const dir = dirs[i];
-        for (let j = 0; j < currentNode.children.length; j++) {
-          const child = currentNode.children[j];
-          if (child.name === dir) {
-            currentNode = child;
-            break;
-          }
-        }
-      }
-    }
-    if (!currentNode.children) {
-      currentNode.children = [];
-    }
-    let exists = false;
-    for (let i = 0; i < currentNode.children.length; i++) {
-      const element = currentNode.children[i];
-      if (element.name === parentNode.name) {
-        exists = true;
-        if (element.children) {
-          for (let j = 0; j < element.children.length; j++) {
-            const child = element.children[j];
-            for (let k = 0; k < parentNode.children.length; k++) {
-              const parentChild = parentNode.children[k];
-              if (child.name === parentChild.name) {
-                parentNode.children[k] = child;
-              }
-            }
-          }
-        }
-        currentNode.children[i] = parentNode;
-        break;
-      }
-    }
-    if (!exists) {
-      if (currentNode === this.root.tree[0]) {
-        parentNode.name = 'root';
-        this.root.tree[0] = parentNode;
-      } else {
-        currentNode.children.push(parentNode);
-      }
-    }
   }
 
   public justStarted() {

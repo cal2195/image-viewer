@@ -22,13 +22,6 @@ export class FilterPipePipe implements PipeTransform {
       }
       return result;
     });
-
-    for (let i = 0; i < items.length; i++) {
-      const current = items[i];
-      current.next = items[i+1];
-      current.prev = items[i-1];
-    }
-
     return items;
   }
 }

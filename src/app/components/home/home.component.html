@@ -42,7 +42,8 @@
         <virtual-scroller *ngIf="this.displayPaths"
           #scroll [items]="this.displayPaths
           | filterPipe: this.selectedSubPath : this.recursive
-          | tagFilterPipe: this.searchString"
+          | tagFilterPipe: this.searchString
+          | imageLinker"
           [childHeight]='206'>
           <app-thumbnail-component
             *ngFor="let item of scroll.viewPortItems"

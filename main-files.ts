@@ -1,3 +1,5 @@
+import { removeBySubpath, insertUpdatedNode } from './main-shared';
+
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -172,6 +174,12 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
   });
 }
 
+export function updateLocalRoot(parentPath: string, parentNode: DirTreeNode, paths: DirTreeElement[]) {
+  root.paths = removeBySubpath(root.paths, parentPath + '/' + parentNode.name);
+  root.paths = root.paths.concat(paths);
+  insertUpdatedNode(root, parentPath, parentNode);
+}
+
 function hashString(str: string): string {
   const hash = crypto.createHash('md5').update(str).digest('hex');
   return hash;
@@ -197,8 +205,8 @@ function generateThumbnail(filePath: string, hash: string, callback) {
   });
 }
 
-export function writeRootToDisk(saveRoot: DirTree, callback: any) {
-  const json = JSON.stringify(saveRoot);
+export function writeRootToDisk(callback: any) {
+  const json = JSON.stringify(root);
   fs.writeFile(cachePath + '/cached.dir', json, 'utf8', callback);
 }
 

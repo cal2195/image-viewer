@@ -2,7 +2,8 @@ import { app, BrowserWindow, screen } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 
-import { initDir, queueReadDir, DirTree, DirTreeNode, DirTreeElement, cancelCurrent, writeRootToDisk, readDiskToRoot } from './main-files';
+import { initDir, queueReadDir, DirTree, DirTreeNode, DirTreeElement,
+         cancelCurrent, writeRootToDisk, readDiskToRoot, updateLocalRoot } from './main-files';
 
 let win, serve;
 const args = process.argv.slice(1);
@@ -98,11 +99,11 @@ ipc.on('just-started', function (event, someMessage) {
   });
 });
 
-ipc.on('save-root-file', function (event, root) {
+ipc.on('save-root-file', function (event) {
   cancelCurrent();
-  writeRootToDisk(root, () => {
+  writeRootToDisk(() => {
     console.log('cached dir written!');
-    //app.quit();
+    angularApp.sender.send('write-done');
   });
 });
 
@@ -138,4 +139,5 @@ function thumbUpdate(hash: string) {
 
 function updateNode(parentPath: string, parentNode: DirTreeNode, paths: DirTreeElement[]) {
   angularApp.sender.send('node-update', parentPath, parentNode, paths);
+  updateLocalRoot(parentPath, parentNode, paths);
 }
