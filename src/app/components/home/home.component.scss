@@ -8,6 +8,7 @@ virtual-scroller {
   width: calc(100% - 170px);
   z-index: 30;
   background: rgba(255,255,255,0.5);
+  position: relative;
 }
 
 .full-image {

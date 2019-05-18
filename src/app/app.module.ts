@@ -27,6 +27,7 @@ import { FilterPipePipe } from './filter-pipe.pipe';
 import { TagFilterPipePipe } from './tag-filter-pipe.pipe';
 import { ImageLinkerPipe } from './image-linker.pipe';
 import { InfoPaneComponent } from './info-pane/info-pane.component';
+import { TagFreqPipe } from './tag-freq.pipe';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -43,7 +44,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     FilterPipePipe,
     TagFilterPipePipe,
     ImageLinkerPipe,
-    InfoPaneComponent
+    InfoPaneComponent,
+    TagFreqPipe
   ],
   imports: [
     BrowserModule,

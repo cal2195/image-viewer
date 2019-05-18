@@ -4,6 +4,7 @@ import { DirTree, DirTreeElement, DirTreeNode } from '../../../../main-files';
 import { removeBySubpath, insertUpdatedNode } from '../../../../main-shared';
 import { FileTreeComponentComponent } from '../../file-tree-component/file-tree-component.component';
 import { VirtualScrollerComponent } from 'ngx-virtual-scroller';
+import { TagFreqService, TagFreq } from '../../tag-freq.service';
 const async = require('async');
 
 export enum KEY_CODE {
@@ -50,9 +51,12 @@ export class HomeComponent implements OnInit {
   searchString = '';
   saved = false;
 
+  tagFreqArray: TagFreq[];
+
   constructor(
     public electronService: ElectronService,
-    private cdr: ChangeDetectorRef) {}
+    private cdr: ChangeDetectorRef,
+    private tagFreqService: TagFreqService) {}
 
   resetTreeTimer() {
     setTimeout(() => {
@@ -104,6 +108,10 @@ export class HomeComponent implements OnInit {
     this.electronService.ipcRenderer.on('thumb-update', (event, hash) => {
       this.thumbUpdate[hash] = true;
       this.cdr.detectChanges();
+    });
+    this.tagFreqService.tagNotifier.subscribe((value: TagFreq[]) => {
+      this.tagFreqArray = value;
+      // this.cd.detectChanges();
     });
     this.justStarted();
   }

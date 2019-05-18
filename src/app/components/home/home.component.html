@@ -43,7 +43,8 @@
           #scroll [items]="this.displayPaths
           | filterPipe: this.selectedSubPath : this.recursive
           | tagFilterPipe: this.searchString
-          | imageLinker"
+          | imageLinker
+          | tagFreq"
           [childHeight]='206'>
           <app-thumbnail-component
             *ngFor="let item of scroll.viewPortItems"
@@ -57,8 +58,8 @@
       </div>
       <div class="info-pane">
         <app-info-pane
-         *ngIf="this.currentImage"
-         [tags]="this.currentImage.tags"
+         [currentImage]="this.currentImage"
+         [tagFreq]="this.tagFreqArray"
          (tagClicked)="this.searchString = this.searchString + ' +' + $event"
         ></app-info-pane>
       </div>

@@ -1,4 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { TagFreq } from '../tag-freq.service';
+import { DirTreeElement } from '../../../main-files';
 
 @Component({
   selector: 'app-info-pane',
@@ -7,7 +9,8 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 })
 export class InfoPaneComponent implements OnInit {
 
-  @Input() tags: string;
+  @Input() currentImage: DirTreeElement;
+  @Input() tagFreq: TagFreq;
   @Output() tagClicked = new EventEmitter<string>();
 
   tagList: string[];
@@ -15,7 +18,9 @@ export class InfoPaneComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
-    this.tagList = this.tags.split(' ');
+    if (this.currentImage) {
+      this.tagList = this.currentImage.tags.split(' ');
+    }
   }
 
 }

@@ -1,8 +1,20 @@
 <div class="info-container">
-  <div
-   *ngFor="let tag of this.tagList"
-   (click)="this.tagClicked.emit(tag)"
-  >
-  {{ tag }}
-  </div>
+  <ng-container
+  *ngIf="this.tagFreq && !this.currentImage">
+    <div
+    *ngFor="let tag of this.tagFreq"
+    (click)="this.tagClicked.emit(tag.tag)"
+    >
+    {{ tag.tag }} ({{ tag.freq }})
+    </div>
+  </ng-container>
+  <ng-container
+   *ngIf="this.currentImage">
+    <div
+    *ngFor="let tag of this.tagList"
+    (click)="this.tagClicked.emit(tag)"
+    >
+    {{ tag }}
+    </div>
+  </ng-container>
 </div>
