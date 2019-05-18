@@ -66,7 +66,7 @@ export function queueReadDir(subPath: string, recursive: boolean, updateNodeCall
 }
 
 function insertTags(entry: DirTreeElement, callback: any) {
-  if (entry.folder) {
+  if (entry.folder || entry.tags) {
     return callback(null, entry);
   }
   try {
@@ -106,7 +106,7 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
       if (file.isFile() && !file.name.match(imageRegex)) {
         return;
       }
-      const entry: DirTreeElement = {
+      const entry = root.paths.find((value) => { return value.path === subPath && value.name === file.name; }) || {
         folder: file.isDirectory(),
         name: file.name,
         path: subPath,
@@ -168,7 +168,7 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
         // }
       }
     });
-    async.series(toGetTags, (err, paths) => {
+    async.parallelLimit(toGetTags, 8, (err, paths) => {
       updateNodeCallback(parentPath, parentNode, paths);
     });
   });

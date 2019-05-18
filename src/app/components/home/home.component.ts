@@ -21,7 +21,7 @@ export class HomeComponent implements OnInit {
   @ViewChild(FileTreeComponentComponent)
   private treeview: FileTreeComponentComponent;
   @ViewChild(VirtualScrollerComponent)
-  private virtualScroller: VirtualScrollerComponent;
+  virtualScroller: VirtualScrollerComponent;
 
   updateQueue = async.queue(async (task, callback) => {
     let newPaths = this.root.paths.slice(0);
@@ -72,13 +72,13 @@ export class HomeComponent implements OnInit {
 
 
   ngOnInit() {
-    window.onbeforeunload = (e) => {
-      if (!this.saved) {
-        console.log('I do not want to be closed');
-        this.electronService.ipcRenderer.send('save-root-file');
-        e.returnValue = false; // equivalent to `return false` but not recommended
-      }
-    };
+    // window.onbeforeunload = (e) => {
+    //   if (!this.saved) {
+    //     console.log('I do not want to be closed');
+    //     this.electronService.ipcRenderer.send('save-root-file');
+    //     e.returnValue = false; // equivalent to `return false` but not recommended
+    //   }
+    // };
     // this.updateQueue.drain = () => {
     //   this.treeview.tree.treeModel.update();
     //   console.log('updating screen');

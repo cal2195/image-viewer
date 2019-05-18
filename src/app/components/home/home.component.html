@@ -1,6 +1,6 @@
 <div class="window">
   <header class="toolbar toolbar-header">
-    <h1 class="title">Header</h1>
+    <h1 class="title">Image Viewer</h1>
     <div class="toolbar-actions">
       <div class="btn-group">
         <button class="btn btn-default" (click)="openNewRoot()">
@@ -54,6 +54,13 @@
             (click)="this.currentImage = item">
           </app-thumbnail-component>
         </virtual-scroller>
+      </div>
+      <div class="info-pane">
+        <app-info-pane
+         *ngIf="this.currentImage"
+         [tags]="this.currentImage.tags"
+         (tagClicked)="this.searchString = this.searchString + ' +' + $event"
+        ></app-info-pane>
       </div>
     </div>
   </div>

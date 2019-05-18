@@ -26,6 +26,7 @@ import { ThumbnailComponentComponent } from './thumbnail-component/thumbnail-com
 import { FilterPipePipe } from './filter-pipe.pipe';
 import { TagFilterPipePipe } from './tag-filter-pipe.pipe';
 import { ImageLinkerPipe } from './image-linker.pipe';
+import { InfoPaneComponent } from './info-pane/info-pane.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -41,7 +42,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     ThumbnailComponentComponent,
     FilterPipePipe,
     TagFilterPipePipe,
-    ImageLinkerPipe
+    ImageLinkerPipe,
+    InfoPaneComponent
   ],
   imports: [
     BrowserModule,
