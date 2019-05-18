@@ -9,9 +9,9 @@
     </div>
   </ng-container>
   <ng-container
-   *ngIf="this.currentImage">
+   *ngIf="this.currentImage && this.currentImage.tags">
     <div
-    *ngFor="let tag of this.tagList"
+    *ngFor="let tag of this.currentImage.tags.split(' ')"
     (click)="this.tagClicked.emit(tag)"
     >
     {{ tag }}

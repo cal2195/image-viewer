@@ -21,7 +21,7 @@ export class TagFreqPipe implements PipeTransform {
       if (item.tags) {
         this.tagFreqService.addString(item.tags);
       } else {
-        this.tagFreqService.addString(item.path.replace('/', ' ') + ' ' + item.name);
+        this.tagFreqService.addString(item.path.replace(/(\/)/g, ' ') + ' ' + item.name);
       }
     });
 

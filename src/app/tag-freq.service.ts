@@ -94,14 +94,9 @@ export class TagFreqService {
   public computeFrequencyArray(total: number, numberOfTags: number): void {
     const finalResult: TagFreq[] = []; // array of objects
 
-    for (let i = 0; i < numberOfTags; i++) {
+    for (let i = 0; i < numberOfTags && i < total; i++) {
       if (this.tagMap.size > 0) {
         finalResult[i] = this.getMostFrequent(total);
-      } else {
-        finalResult[i] = {
-          tag: null,
-          freq: null
-        };
       }
     }
 

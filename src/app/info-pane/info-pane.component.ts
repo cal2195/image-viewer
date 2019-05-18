@@ -13,14 +13,10 @@ export class InfoPaneComponent implements OnInit {
   @Input() tagFreq: TagFreq;
   @Output() tagClicked = new EventEmitter<string>();
 
-  tagList: string[];
 
   constructor() { }
 
   ngOnInit() {
-    if (this.currentImage) {
-      this.tagList = this.currentImage.tags.split(' ');
-    }
   }
 
 }

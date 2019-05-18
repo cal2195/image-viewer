@@ -101,7 +101,7 @@ export class HomeComponent implements OnInit {
     });
     this.electronService.ipcRenderer.on('node-update', (event, parentPath, parentNode, paths) => {
       const task = {parentPath: parentPath, parentNode: parentNode, paths: paths};
-      console.log(paths);
+      //console.log(paths);
       this.updateQueue.push(task, () => {
       });
     });
