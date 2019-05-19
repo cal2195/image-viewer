@@ -7,6 +7,25 @@ export function removeBySubpath(paths: DirTreeElement[], subPath: string): DirTr
   return paths;
 }
 
+export function deleteNodeAndPaths(root: DirTree, parentPath: string) {
+  const dirs = parentPath.split('/');
+  let currentNode = root.tree[0];
+  if (dirs.length > 1) {
+    for (let i = 0; i < dirs.length - 1; i++) {
+      const dir = dirs[i];
+      for (let j = 0; j < currentNode.children.length; j++) {
+        const child = currentNode.children[j];
+        if (child.name === dir) {
+          currentNode = child;
+          break;
+        }
+      }
+    }
+  }
+  currentNode.children = currentNode.children.filter((child) => { return child.name !== dirs[dirs.length - 1] });
+  root.paths = removeBySubpath(root.paths, parentPath);
+}
+
 export function insertUpdatedNode(root: DirTree, parentPath: string, parentNode: DirTreeNode) {
   const dirs = parentPath.split('/');
   let currentNode = root.tree[0];

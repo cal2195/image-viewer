@@ -1,4 +1,4 @@
-import { removeBySubpath, insertUpdatedNode } from './main-shared';
+import { removeBySubpath, insertUpdatedNode, deleteNodeAndPaths } from './main-shared';
 
 const fs = require('fs');
 const path = require('path');
@@ -40,10 +40,10 @@ let root: DirTree;
 let thumbQueue = async.queue((task, callback) => {
   console.log('starting %s', task);
   generateThumbnail(task.filePath, task.hash, callback);
-}, 8);
+}, 4);
 let dirQueue = async.queue((task, callback) => {
   readDir(task.subPath, task.recursive, task.updateNodeCallback, task.thumbUpdateCallback, callback);
-}, 16);
+}, 8);
 
 export function initDir(rootDir: string, updateRootCallback: any) {
   try {
@@ -102,7 +102,7 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
     parentNode.children = [];
 
     // tslint:disable-next-line:forin
-    files.forEach(file => {
+    files.reverse().forEach(file => {
       if (file.isFile() && !file.name.match(imageRegex)) {
         return;
       }
@@ -169,6 +169,7 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
       }
     });
     async.parallelLimit(toGetTags, 8, (err, paths) => {
+      parentNode.children = parentNode.children.reverse();
       updateNodeCallback(parentPath, parentNode, paths);
     });
   });
@@ -219,4 +220,13 @@ export function readDiskToRoot(callback: any) {
       callback(root);
     }
   });
+}
+
+export function markForDelete(path: string, file: string) {
+  try {
+    fs.renameSync(root.rootPath + '/' + path + '/' + file, root.rootPath + '/' + path + '/.delete_' + file);
+    deleteNodeAndPaths(root, path + '/' + file);
+  } catch (e) {
+    console.log(e);
+  }
 }

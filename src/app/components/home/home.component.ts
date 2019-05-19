@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, HostListener, ViewChild } from '@angular/core';
 import { ElectronService } from '../../providers/electron.service';
 import { DirTree, DirTreeElement, DirTreeNode } from '../../../../main-files';
-import { removeBySubpath, insertUpdatedNode } from '../../../../main-shared';
+import { removeBySubpath, insertUpdatedNode, deleteNodeAndPaths } from '../../../../main-shared';
 import { FileTreeComponentComponent } from '../../file-tree-component/file-tree-component.component';
 import { VirtualScrollerComponent } from 'ngx-virtual-scroller';
 import { TagFreqService, TagFreq } from '../../tag-freq.service';
@@ -76,13 +76,13 @@ export class HomeComponent implements OnInit {
 
 
   ngOnInit() {
-    // window.onbeforeunload = (e) => {
-    //   if (!this.saved) {
-    //     console.log('I do not want to be closed');
-    //     this.electronService.ipcRenderer.send('save-root-file');
-    //     e.returnValue = false; // equivalent to `return false` but not recommended
-    //   }
-    // };
+    window.onbeforeunload = (e) => {
+      if (!this.saved) {
+        console.log('I do not want to be closed');
+        this.electronService.ipcRenderer.send('save-root-file');
+        e.returnValue = false; // equivalent to `return false` but not recommended
+      }
+    };
     // this.updateQueue.drain = () => {
     //   this.treeview.tree.treeModel.update();
     //   console.log('updating screen');
@@ -140,6 +140,15 @@ export class HomeComponent implements OnInit {
     this.recursive = !this.recursive;
     this.electronService.ipcRenderer.send('update-recursive', this.recursive);
     this.updateDir(this.selectedSubPath);
+  }
+
+  public markSelectedForDelete() {
+    const sep = this.selectedSubPath.lastIndexOf('/');
+    const subpath = this.selectedSubPath.substring(0, sep);
+    const folder = this.selectedSubPath.substring(sep+1);
+    this.electronService.ipcRenderer.send('mark-for-delete', subpath, folder);
+    deleteNodeAndPaths(this.root, this.selectedSubPath);
+    this.dirtyTree = true;
   }
 
   // Listen for key presses

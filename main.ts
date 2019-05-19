@@ -3,7 +3,8 @@ import * as path from 'path';
 import * as url from 'url';
 
 import { initDir, queueReadDir, DirTree, DirTreeNode, DirTreeElement,
-         cancelCurrent, writeRootToDisk, readDiskToRoot, updateLocalRoot } from './main-files';
+         cancelCurrent, writeRootToDisk, readDiskToRoot, updateLocalRoot,
+         markForDelete } from './main-files';
 
 let win, serve;
 const args = process.argv.slice(1);
@@ -105,6 +106,10 @@ ipc.on('save-root-file', function (event) {
     console.log('cached dir written!');
     angularApp.sender.send('write-done');
   });
+});
+
+ipc.on('mark-for-delete', function(event, path, file) {
+  markForDelete(path, file);
 });
 
 ipc.on('update-dir', function (event, subpath) {
