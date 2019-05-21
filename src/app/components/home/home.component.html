@@ -27,12 +27,12 @@
     </div>
   </header>
   <div class="window-content">
-    <div *ngIf="this.currentImage" class="image-view" (click)="this.currentImage = null">
-      <img
-        class="full-image"
-        [src]="'file://' + this.root.rootPath + this.currentImage.path + '/' + this.currentImage.name"
-        />
-    </div>
+    <app-image-view
+    *ngIf="this.currentImage"
+    [currentImage]="this.currentImage"
+    [root]="this.root"
+    (click)="this.currentImage = null">
+    </app-image-view>
     <div class="pane-group">
       <div class="pane-sm sidebar">
         <app-file-tree-component

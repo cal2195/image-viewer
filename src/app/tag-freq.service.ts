@@ -55,7 +55,7 @@ export class TagFreqService {
    */
   public cleanMap(): void {
     this.tagMap.forEach((value, key) => {
-      if (value < 3) {
+      if (value < 2) {
         this.tagMap.delete(key);
       }
     });
@@ -93,6 +93,8 @@ export class TagFreqService {
    **/
   public computeFrequencyArray(total: number, numberOfTags: number): void {
     const finalResult: TagFreq[] = []; // array of objects
+
+    this.cleanMap();
 
     for (let i = 0; i < numberOfTags && i < total; i++) {
       if (this.tagMap.size > 0) {

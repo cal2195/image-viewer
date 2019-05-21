@@ -90,6 +90,7 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
   const parentPath = dirs.slice(0, dirs.length - 1).join('/');
   const parentNode: DirTreeNode = { id: subPath, name: parentName, path: parentPath };
   const toGetTags = [];
+  const paths = [];
 
   fs.readdir(path.join(root.rootPath, subPath), {encoding: 'utf8', withFileTypes: true}, (err, files) => {
     queueCallback();
@@ -110,8 +111,9 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
         folder: file.isDirectory(),
         name: file.name,
         path: subPath,
-        hash: hashString(root.rootPath + subPath + '/' + file.name)
+        hash: hashString(subPath.substring(subPath.lastIndexOf('/')) + '/' + file.name)
       };
+      paths.push(entry);
       toGetTags.push((callback) => {
         insertTags(entry, callback);
       });
@@ -168,6 +170,7 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
         // }
       }
     });
+    updateNodeCallback(parentPath, parentNode, paths);
     async.parallelLimit(toGetTags, 8, (err, paths) => {
       parentNode.children = parentNode.children.reverse();
       updateNodeCallback(parentPath, parentNode, paths);

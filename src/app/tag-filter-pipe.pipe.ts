@@ -13,9 +13,9 @@ export class TagFilterPipePipe implements PipeTransform {
     const searchTags = tags.split(' ');
     return items.filter((item) => {
       if (item.tags) {
-        return this.hasTag(item.tags, searchTags);
+        return this.hasTag(item.tags, searchTags) || this.hasTag(item.name, searchTags);
       } else {
-        return this.hasTag(item.path + '/' + item.name, searchTags);
+        return this.hasTag(item.name, searchTags);
       }
       return false;
     });
