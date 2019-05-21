@@ -30,7 +30,7 @@ export class TagFreqService {
     // Strip out: {}()[] as well as 'for', 'her', 'the', 'and', & ','
     const regex = /{|}|\(|\)|\[|\]|\b(for|her|the|and)\b|,/gi;
     tagString = tagString.replace(regex, '');
-    const wordArray = tagString.split(' ');
+    const wordArray = Array.from(new Set(tagString.split(' '))); // only unique
     wordArray.forEach(word => {
       if (!(word.length < 3)) {
         this.addTag(word.toLowerCase());
@@ -71,7 +71,7 @@ export class TagFreqService {
     let currLargestWord = '';
 
     this.tagMap.forEach((value, key) => {
-      if (value > currLargestFreq && value < total) {
+      if (value > currLargestFreq) {
         currLargestFreq = value;
         currLargestWord = key;
       }

@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const async = require('async');
+const _ = require('underscore');
 
 export interface DirTree {
   rootPath: string;
@@ -103,7 +104,7 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
     parentNode.children = [];
 
     // tslint:disable-next-line:forin
-    files.reverse().forEach(file => {
+    _.shuffle(files).forEach(file => {
       if (file.isFile() && !file.name.match(imageRegex)) {
         return;
       }
@@ -172,7 +173,7 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
     });
     updateNodeCallback(parentPath, parentNode, paths);
     async.parallelLimit(toGetTags, 8, (err, paths) => {
-      parentNode.children = parentNode.children.reverse();
+      parentNode.children = _.sortBy(parentNode.children, (child) => {return child.name});
       updateNodeCallback(parentPath, parentNode, paths);
     });
   });

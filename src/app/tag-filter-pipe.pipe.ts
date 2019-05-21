@@ -10,14 +10,13 @@ export class TagFilterPipePipe implements PipeTransform {
     if (!items || !tags || tags === '') {
       return items;
     }
-    const searchTags = tags.split(' ');
+    const searchTags = tags.toLowerCase().split(' ');
     return items.filter((item) => {
       if (item.tags) {
-        return this.hasTag(item.tags, searchTags) || this.hasTag(item.name, searchTags);
+        return this.hasTag(item.tags.toLowerCase(), searchTags) || this.hasTag(item.name.toLowerCase(), searchTags);
       } else {
-        return this.hasTag(item.name, searchTags);
+        return this.hasTag(item.name.toLowerCase(), searchTags);
       }
-      return false;
     });
   }
 

@@ -19,9 +19,10 @@ export class TagFreqPipe implements PipeTransform {
 
     items.forEach((item) => {
       if (item.tags) {
-        this.tagFreqService.addString(item.tags);
+        this.tagFreqService.addString(item.tags + ' ' + item.name);
+      } else {
+        this.tagFreqService.addString(item.name);
       }
-      this.tagFreqService.addString(item.name);
     });
 
     this.tagFreqService.computeFrequencyArray(items.length, 100);
