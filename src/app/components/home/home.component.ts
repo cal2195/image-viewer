@@ -74,6 +74,17 @@ export class HomeComponent implements OnInit {
     }, 1000);
   }
 
+  findCurrentParent() {
+    if (this.currentImage) {
+      console.log('trying to find %s', this.currentImage.path);
+      const parentNode = this.treeview.tree.treeModel.getNodeById(this.currentImage.path);
+      if (parentNode) {
+        console.log('found parent node!');
+        parentNode.setActiveAndVisible();
+        this.currentImage = null;
+      }
+    }
+  }
 
   ngOnInit() {
     window.onbeforeunload = (e) => {

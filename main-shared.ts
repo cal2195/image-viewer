@@ -56,6 +56,7 @@ export function insertUpdatedNode(root: DirTree, parentPath: string, parentNode:
             const parentChild = parentNode.children[k];
             if (child.name === parentChild.name) {
               parentNode.children[k] = child;
+              console.log('found matching child %s', child.name);
             }
           }
         }
@@ -67,6 +68,19 @@ export function insertUpdatedNode(root: DirTree, parentPath: string, parentNode:
   if (!exists) {
     if (currentNode === root.tree[0]) {
       parentNode.name = 'root';
+      const element = root.tree[0];
+      if (element.children) {
+        for (let j = 0; j < element.children.length; j++) {
+          const child = element.children[j];
+          for (let k = 0; k < parentNode.children.length; k++) {
+            const parentChild = parentNode.children[k];
+            if (child.name === parentChild.name) {
+              parentNode.children[k] = child;
+              console.log('found matching root child %s', child.name);
+            }
+          }
+        }
+      }
       root.tree[0] = parentNode;
     } else {
       currentNode.children.push(parentNode);
