@@ -94,7 +94,6 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
   const paths = [];
 
   fs.readdir(path.join(root.rootPath, subPath), {encoding: 'utf8', withFileTypes: true}, (err, files) => {
-    queueCallback();
     if (err) {
       console.log(err);
       // call refresh?
@@ -176,6 +175,7 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
       parentNode.children = _.sortBy(parentNode.children, (child) => {return child.name});
       updateNodeCallback(parentPath, parentNode, paths);
     });
+    queueCallback();
   });
 }
 
