@@ -21,6 +21,9 @@
         <button class="btn btn-default" (click)="findCurrentParent()">
           <span class="icon icon-folder"></span>
         </button>
+        <button class="btn btn-default" (click)="this.showMoveFolder = true">
+            <span class="icon icon-export"></span>
+          </button>
       </div>
       <input
             #search
@@ -32,6 +35,12 @@
     </div>
   </header>
   <div class="window-content">
+    <app-move-folder
+     *ngIf="this.showMoveFolder"
+     [rootFolderHistory]="this.root.moveRootFolderHistory"
+     [subFolderHistory]="this.root.moveSubFolderHistory"
+     (moveFolderSelected)="moveFolder($event)">
+    </app-move-folder>
     <app-image-view
     *ngIf="this.currentImage"
     [currentImage]="this.currentImage"

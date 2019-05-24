@@ -1,0 +1,29 @@
+<div class='move-folder-container'>
+  <label for="rootfolder">Root Folder:</label>
+  <input
+    id="rootfolder"
+    type="text"
+    class="form-control"
+    [(ngModel)]="rootFolder"
+    [ngbTypeahead]="searchRootFolder"
+    (focus)="rootFocus$.next($event.target.value)"
+    (click)="rootClick$.next($event.target.value)"
+    [placeholder]="this.rootFolderHistory[0] || ''"
+    #rootFolderInput="ngbTypeahead"
+  />
+  <label for="subFolder">Sub Folder:</label>
+  <input
+    id="subfolder"
+    type="text"
+    class="form-control"
+    [(ngModel)]="subFolder"
+    [ngbTypeahead]="searchSubFolder"
+    (focus)="subFocus$.next($event.target.value)"
+    (click)="subClick$.next($event.target.value)"
+    [placeholder]="this.subFolderHistory[0] || ''"
+    #subFolderInput="ngbTypeahead"
+  />
+  <button class="btn btn-default"
+  (click)="outputMoveFolder()"
+  >Move Folder</button>
+</div>

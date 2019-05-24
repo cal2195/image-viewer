@@ -4,7 +4,9 @@ import * as url from 'url';
 
 import { initDir, queueReadDir, DirTree, DirTreeNode, DirTreeElement,
          cancelCurrent, writeRootToDisk, readDiskToRoot, updateLocalRoot,
-         markForDelete } from './main-files';
+         markForDelete,
+         moveFolder} from './main-files';
+import { MoveFolderEvent } from './src/app/move-folder/move-folder.component';
 
 let win, serve;
 const args = process.argv.slice(1);
@@ -110,6 +112,10 @@ ipc.on('save-root-file', function (event) {
 
 ipc.on('mark-for-delete', function(event, path, file) {
   markForDelete(path, file);
+});
+
+ipc.on('move-folder', function(event, path, file, moveEvent: MoveFolderEvent) {
+  moveFolder(path, moveEvent, file);
 });
 
 ipc.on('update-dir', function (event, subpath) {

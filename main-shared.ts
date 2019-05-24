@@ -1,4 +1,5 @@
 import { DirTreeElement, DirTreeNode, DirTree } from './main-files';
+import { MoveFolderEvent } from './src/app/move-folder/move-folder.component';
 
 export function removeBySubpath(paths: DirTreeElement[], subPath: string): DirTreeElement[] {
   paths = paths.filter((element) => {
@@ -86,4 +87,13 @@ export function insertUpdatedNode(root: DirTree, parentPath: string, parentNode:
       currentNode.children.push(parentNode);
     }
   }
+}
+
+export function updateMoveFolderHistory(root: DirTree, event: MoveFolderEvent) {
+  root.moveRootFolderHistory = root.moveRootFolderHistory.filter(
+    (value) => {return value !== event.rootFolder});
+  root.moveRootFolderHistory.unshift(event.rootFolder);
+  root.moveSubFolderHistory = root.moveSubFolderHistory.filter(
+    (value) => {return value !== event.subFolder});
+  root.moveSubFolderHistory.unshift(event.subFolder);
 }

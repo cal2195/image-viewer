@@ -1,10 +1,11 @@
 import { Component, OnInit, ChangeDetectorRef, HostListener, ViewChild } from '@angular/core';
 import { ElectronService } from '../../providers/electron.service';
 import { DirTree, DirTreeElement, DirTreeNode } from '../../../../main-files';
-import { removeBySubpath, insertUpdatedNode, deleteNodeAndPaths } from '../../../../main-shared';
+import { removeBySubpath, insertUpdatedNode, deleteNodeAndPaths, updateMoveFolderHistory } from '../../../../main-shared';
 import { FileTreeComponentComponent } from '../../file-tree-component/file-tree-component.component';
 import { VirtualScrollerComponent } from 'ngx-virtual-scroller';
 import { TagFreqService, TagFreq } from '../../tag-freq.service';
+import { MoveFolderEvent } from '../../move-folder/move-folder.component';
 const async = require('async');
 
 export enum KEY_CODE {
@@ -51,6 +52,8 @@ export class HomeComponent implements OnInit {
   searchString = '';
   saved = false;
 
+  showMoveFolder = false;
+
   tagFreqArray: TagFreq[];
 
   constructor(
@@ -84,6 +87,18 @@ export class HomeComponent implements OnInit {
         this.currentImage = null;
       }
     }
+  }
+
+  moveFolder(event: MoveFolderEvent) {
+    const sep = this.selectedSubPath.lastIndexOf('/');
+    const subpath = this.selectedSubPath.substring(0, sep);
+    const folder = this.selectedSubPath.substring(sep+1);
+    updateMoveFolderHistory(this.root, event);
+    this.electronService.ipcRenderer.send('move-folder', subpath, folder, event);
+    deleteNodeAndPaths(this.root, this.selectedSubPath);
+    this.dirtyTree = true;
+    this.showMoveFolder = false;
+    console.log(event);
   }
 
   ngOnInit() {

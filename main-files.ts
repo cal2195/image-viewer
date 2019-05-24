@@ -1,6 +1,7 @@
-import { removeBySubpath, insertUpdatedNode, deleteNodeAndPaths } from './main-shared';
+import { removeBySubpath, insertUpdatedNode, deleteNodeAndPaths, updateMoveFolderHistory } from './main-shared';
+import { MoveFolderEvent } from './src/app/move-folder/move-folder.component';
 
-const fs = require('fs');
+const fs = require('fs-extra');
 const path = require('path');
 const crypto = require('crypto');
 const async = require('async');
@@ -11,6 +12,8 @@ export interface DirTree {
   cachePath: string;
   paths: DirTreeElement[];
   tree: [DirTreeNode];
+  moveRootFolderHistory: string[];
+  moveSubFolderHistory: string[];
 }
 
 export interface DirTreeNode {
@@ -51,7 +54,9 @@ export function initDir(rootDir: string, updateRootCallback: any) {
     fs.mkdirSync(cachePath);
   } catch (e) {}
   root = { rootPath: rootDir, cachePath: cachePath,
-    paths: [], tree: [{ id: '', name: 'root', path: '', children: [], isExpanded: true }] };
+    paths: [], tree: [{ id: '', name: 'root', path: '', children: [], isExpanded: true }],
+    moveRootFolderHistory: [rootDir],
+    moveSubFolderHistory: [] };
   updateRootCallback(root);
 }
 
@@ -230,6 +235,17 @@ export function markForDelete(path: string, file: string) {
   try {
     fs.renameSync(root.rootPath + '/' + path + '/' + file, root.rootPath + '/' + path + '/.delete_' + file);
     deleteNodeAndPaths(root, path + '/' + file);
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+export function moveFolder(oldPath: string, moveEvent: MoveFolderEvent, file: string) {
+  try {
+    fs.mkdirpSync(moveEvent.rootFolder + '/' + moveEvent.subFolder);
+    fs.renameSync(root.rootPath + '/' + oldPath + '/' + file, moveEvent.rootFolder + '/' + moveEvent.subFolder + '/' + file);
+    deleteNodeAndPaths(root, oldPath + '/' + file);
+    updateMoveFolderHistory(root, moveEvent);
   } catch (e) {
     console.log(e);
   }

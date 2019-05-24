@@ -18,6 +18,7 @@ import { WebviewDirective } from './directives/webview.directive';
 
 import { TreeModule } from 'angular-tree-component';
 import { VirtualScrollerModule } from 'ngx-virtual-scroller';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { AppComponent } from './app.component';
 import { HomeComponent } from './components/home/home.component';
@@ -29,6 +30,7 @@ import { ImageLinkerPipe } from './image-linker.pipe';
 import { InfoPaneComponent } from './info-pane/info-pane.component';
 import { TagFreqPipe } from './tag-freq.pipe';
 import { ImageViewComponent } from './image-view/image-view.component';
+import { MoveFolderComponent } from './move-folder/move-folder.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -47,13 +49,15 @@ export function HttpLoaderFactory(http: HttpClient) {
     ImageLinkerPipe,
     InfoPaneComponent,
     TagFreqPipe,
-    ImageViewComponent
+    ImageViewComponent,
+    MoveFolderComponent
   ],
   imports: [
     BrowserModule,
     FormsModule,
     HttpClientModule,
     AppRoutingModule,
+    NgbModule,
     TreeModule.forRoot(),
     TranslateModule.forRoot({
       loader: {
