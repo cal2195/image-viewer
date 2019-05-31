@@ -11,7 +11,7 @@ export class FilterPipePipe implements PipeTransform {
       return;
     }
     items = items.filter((item) => {
-      if (item.name.match(imageRegex)) {
+      if (item.name.toLowerCase().match(imageRegex)) {
         return (recursive && item.path.startsWith(subPath)) || (!recursive && item.path === subPath);
       }
       return false;

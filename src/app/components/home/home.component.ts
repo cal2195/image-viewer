@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, HostListener, ViewChild } from '@angular/core';
 import { ElectronService } from '../../providers/electron.service';
 import { DirTree, DirTreeElement, DirTreeNode } from '../../../../main-files';
-import { removeBySubpath, insertUpdatedNode, deleteNodeAndPaths, updateMoveFolderHistory } from '../../../../main-shared';
+import { removeBySubpath, insertUpdatedNode, deleteNodeAndPaths, updateMoveFolderHistory, addSubHistory, clearSubHistory } from '../../../../main-shared';
 import { FileTreeComponentComponent } from '../../file-tree-component/file-tree-component.component';
 import { VirtualScrollerComponent } from 'ngx-virtual-scroller';
 import { TagFreqService, TagFreq } from '../../tag-freq.service';
@@ -89,6 +89,12 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  regenerateAutoDirs(rootPath: string) {
+    this.showMoveFolder = false;
+    clearSubHistory(this.root);
+    this.electronService.ipcRenderer.send('gen-auto-tree', rootPath);
+  }
+
   moveFolder(event: MoveFolderEvent) {
     const sep = this.selectedSubPath.lastIndexOf('/');
     const subpath = this.selectedSubPath.substring(0, sep);
@@ -138,6 +144,10 @@ export class HomeComponent implements OnInit {
     this.tagFreqService.tagNotifier.subscribe((value: TagFreq[]) => {
       this.tagFreqArray = value;
       // this.cd.detectChanges();
+    });
+    this.electronService.ipcRenderer.on('new-auto-dir', (event, newPath) => {
+      console.log('new path: ' + newPath);
+      addSubHistory(this.root, newPath);
     });
     this.justStarted();
   }

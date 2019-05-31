@@ -5,7 +5,8 @@ import * as url from 'url';
 import { initDir, queueReadDir, DirTree, DirTreeNode, DirTreeElement,
          cancelCurrent, writeRootToDisk, readDiskToRoot, updateLocalRoot,
          markForDelete,
-         moveFolder} from './main-files';
+         moveFolder,
+         genereateMoveTree} from './main-files';
 import { MoveFolderEvent } from './src/app/move-folder/move-folder.component';
 
 let win, serve;
@@ -139,6 +140,14 @@ ipc.on('new-root', function (event) {
     }
   });
 });
+
+ipc.on('gen-auto-tree', function (event, rootPath) {
+  genereateMoveTree(rootPath, sendNewAutoDir);
+});
+
+function sendNewAutoDir(newPath) {
+  angularApp.sender.send('new-auto-dir', newPath);
+}
 
 function updateRoot(root: DirTree) {
   angularApp.sender.send('root-init', root);

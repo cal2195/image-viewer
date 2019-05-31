@@ -54,6 +54,7 @@
     "@ngx-translate/http-loader": "4.0.0",
     "@types/jasmine": "2.8.7",
     "@types/jasminewd2": "2.0.3",
+    "@types/klaw": "^3.0.0",
     "@types/mocha": "^5.2.6",
     "@types/node": "8.9.4",
     "chai": "^4.2.0",
@@ -87,7 +88,9 @@
     "angular-tree-component": "^8.3.0",
     "async": "^2.6.2",
     "fs-extra": "^8.0.1",
+    "klaw": "^3.0.0",
     "ngx-virtual-scroller": "^3.0.0",
+    "through2": "^3.0.1",
     "underscore": "^1.9.1"
   }
 }

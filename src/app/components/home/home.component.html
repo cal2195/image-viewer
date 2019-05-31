@@ -23,7 +23,7 @@
         </button>
         <button class="btn btn-default" (click)="this.showMoveFolder = true">
             <span class="icon icon-export"></span>
-          </button>
+        </button>
       </div>
       <input
             #search
@@ -39,7 +39,8 @@
      *ngIf="this.showMoveFolder"
      [rootFolderHistory]="this.root.moveRootFolderHistory"
      [subFolderHistory]="this.root.moveSubFolderHistory"
-     (moveFolderSelected)="moveFolder($event)">
+     (moveFolderSelected)="moveFolder($event)"
+     (regenFolderEvent)="regenerateAutoDirs($event)">
     </app-move-folder>
     <app-image-view
     *ngIf="this.currentImage"

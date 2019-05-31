@@ -18,6 +18,7 @@ export class MoveFolderComponent implements OnInit {
   @Input() rootFolderHistory: string[];
   @Input() subFolderHistory: string[];
   @Output() moveFolderSelected = new EventEmitter<MoveFolderEvent>();
+  @Output() regenFolderEvent = new EventEmitter<string>();
 
   rootFolder: any;
   subFolder: any;
@@ -36,8 +37,17 @@ export class MoveFolderComponent implements OnInit {
     const inputFocus$ = this.rootFocus$;
 
     return merge(debouncedText$, inputFocus$, clicksWithClosedPopup$).pipe(
-      map(term => (term === '' ? this.rootFolderHistory
-        : this.rootFolderHistory.filter(v => v.toLowerCase().indexOf(term.toLowerCase()) > -1)).slice(0, 10))
+      map(term => (term === '' ? this.rootFolderHistory.slice(0, 10)
+        : this.rootFolderHistory.filter(v => {
+          const terms = term.split(' ');
+          for (let i = 0; i < terms.length; i++) {
+            const x = terms[i];
+            if (v.toLowerCase().indexOf(x.toLowerCase()) === -1) {
+              return false;
+            }
+          }
+          return true;
+        }).slice(0, 10)))
     );
   }
 
@@ -47,14 +57,26 @@ export class MoveFolderComponent implements OnInit {
     const inputFocus$ = this.subFocus$;
 
     return merge(debouncedText$, inputFocus$, clicksWithClosedPopup$).pipe(
-      map(term => (term === '' ? this.subFolderHistory
-        : this.subFolderHistory.filter(v => v.toLowerCase().indexOf(term.toLowerCase()) > -1)).slice(0, 10))
+      map(term => (term === '' ? this.subFolderHistory.slice(0, 10)
+        : this.subFolderHistory.filter(v => {
+          const terms = term.split(' ');
+          for (let i = 0; i < terms.length; i++) {
+            const x = terms[i];
+            if (v.toLowerCase().indexOf(x.toLowerCase()) === -1) {
+              return false;
+            }
+          }
+          return true;
+        }).slice(0, 10)))
     );
   }
 
   constructor() { }
 
-  ngOnInit() {
+  ngOnInit() {}
+
+  regenFolders() {
+    this.regenFolderEvent.emit(this.rootFolder || this.rootFolderHistory[0]);
   }
 
   outputMoveFolder() {

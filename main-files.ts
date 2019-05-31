@@ -1,4 +1,4 @@
-import { removeBySubpath, insertUpdatedNode, deleteNodeAndPaths, updateMoveFolderHistory } from './main-shared';
+import { removeBySubpath, insertUpdatedNode, deleteNodeAndPaths, updateMoveFolderHistory, clearSubHistory, addSubHistory } from './main-shared';
 import { MoveFolderEvent } from './src/app/move-folder/move-folder.component';
 
 const fs = require('fs-extra');
@@ -35,7 +35,7 @@ export interface DirTreeElement {
   tags?: string;
 }
 
-export const imageRegex = /(.jpg|.png|.gif)$/;
+export const imageRegex = /(.jpg|.jpeg|.png|.gif)$/;
 
 const homedir = require('os').homedir();
 const cachePath = homedir + '/.imageviewer/';
@@ -108,8 +108,8 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
     parentNode.children = [];
 
     // tslint:disable-next-line:forin
-    _.shuffle(files).forEach(file => {
-      if (file.isFile() && !file.name.match(imageRegex)) {
+    files.reverse().forEach(file => {
+      if (file.isFile() && !file.name.toLowerCase().match(imageRegex)) {
         return;
       }
       const entry = root.paths.find((value) => { return value.path === subPath && value.name === file.name; }) || {
@@ -124,7 +124,7 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
       });
 
       // gen thumbs
-      if (file.isFile() && file.name.match(imageRegex)) {
+      if (file.isFile() && file.name.toLowerCase().match(imageRegex)) {
         fs.access(root.cachePath + entry.hash + '.jpg', fs.constants.F_OK, (notExists) => {
           if (notExists) {
             console.log('queueing %s', file.name);
@@ -249,4 +249,29 @@ export function moveFolder(oldPath: string, moveEvent: MoveFolderEvent, file: st
   } catch (e) {
     console.log(e);
   }
+}
+
+const klaw = require('klaw')
+const through2 = require('through2');
+
+const excludeFileFilter = through2.obj(function (item, enc, next) {
+  if (item.stats.isDirectory()) {
+    this.push(item);
+  }
+  next();
+});
+
+export function genereateMoveTree(rootPath: string, newDir: any) {
+  clearSubHistory(root);
+  klaw(rootPath)
+  .pipe(excludeFileFilter)
+  .on('data', item => {
+    const dir = item.path.substring(rootPath.length, item.path.lastIndexOf('/'));
+    if (dir === '' || item.path === rootPath) {
+      return;
+    }
+    console.log('found %s from %s with root %s', dir, item.path, rootPath);
+    addSubHistory(root, dir);
+    newDir(dir);
+  });
 }
