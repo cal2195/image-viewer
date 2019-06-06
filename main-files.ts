@@ -6,6 +6,7 @@ const path = require('path');
 const crypto = require('crypto');
 const async = require('async');
 const _ = require('underscore');
+const sizeOf = require('image-size');
 
 export interface DirTree {
   rootPath: string;
@@ -28,11 +29,20 @@ export interface DirTreeNode {
 export interface DirTreeElement {
   folder: boolean;
   name: string;
+  nameTags: string;
   path: string;
   hash: string;
   next?: DirTreeElement;
   prev?: DirTreeElement;
   tags?: string;
+  dimensions?: ImageSize;
+  size?: string;
+  orientation?: string;
+}
+
+export interface ImageSize {
+  width: number;
+  height: number;
 }
 
 export const imageRegex = /(.jpg|.jpeg|.png|.gif)$/;
@@ -71,22 +81,82 @@ export function queueReadDir(subPath: string, recursive: boolean, updateNodeCall
   dirQueue.unshift(task, () => {});
 }
 
+function insertMetadata(entry: DirTreeElement, callback: any) {
+  insertTags(entry, (taggedEntry) => {
+    insertSize(taggedEntry, (sizedEntry) => {
+      callback(null, sizedEntry);
+    });
+  });
+}
+
 function insertTags(entry: DirTreeElement, callback: any) {
-  if (entry.folder || entry.tags) {
-    return callback(null, entry);
+  if (entry.tags) {
+    return callback(entry);
   }
+
+  const filePath = root.rootPath + entry.path + '/' + entry.name;
   try {
     console.log('inserting tags for %s', entry.name);
-    fs.readFile(root.rootPath + entry.path + '/' + entry.name + '.tags', 'utf8', (err, data) => {
+    fs.readFile(filePath + '.tags', 'utf8', (err, data) => {
       if (!err) {
         entry.tags = data;
       }
-      callback(null, entry);
+      callback(entry);
     });
   } catch (e) {
     console.log(e);
-    callback(null, entry);
+    callback(entry);
   }
+}
+
+function insertSize(entry: DirTreeElement, callback: any) {
+  if (entry.dimensions) {
+    return callback(entry);
+  }
+
+  const filePath = root.rootPath + entry.path + '/' + entry.name;
+  console.log('inserting size for %s', entry.name);
+  sizeOf(filePath, function (err, dimensions) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log('got size: %dx%d', dimensions.width, dimensions.height);
+      entry.dimensions = { width: dimensions.width, height: dimensions.height };
+      entry.size = dimensionsToSize(entry.dimensions);
+      entry.orientation = dimensionsToOrientation(entry.dimensions);
+    }
+    callback(entry);
+  });
+}
+
+export enum IMAGE_SIZE {
+  TINY = 300000,
+  SMALL = 800000,
+  LARGE = 2000000
+}
+
+function dimensionsToSize(dimensions: ImageSize) {
+  const imageMegapixels = dimensions.width * dimensions.height;
+  if (imageMegapixels <= IMAGE_SIZE.TINY) {
+    return 'size:little/tiny';
+  }
+  if (imageMegapixels <= IMAGE_SIZE.SMALL) {
+    return 'size:little/small';
+  }
+  if (imageMegapixels <= IMAGE_SIZE.LARGE) {
+    return 'size:big/large';
+  }
+  return 'size:big/huge';
+}
+
+function dimensionsToOrientation(dimensions: ImageSize) {
+  if (dimensions.width === dimensions.height) {
+    return 'orientation:square';
+  }
+  if (dimensions.width > dimensions.height) {
+    return 'orientation:landscape';
+  }
+  return 'orientation:portrait';
 }
 
 export function readDir(subPath: string, recursive: boolean, updateNodeCallback: any, thumbUpdateCallback: any, queueCallback: any) {
@@ -102,6 +172,7 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
     if (err) {
       console.log(err);
       // call refresh?
+      queueCallback();
       return;
     }
     console.log('READ dir: %s', path.join(root.rootPath, subPath));
@@ -115,13 +186,16 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
       const entry = root.paths.find((value) => { return value.path === subPath && value.name === file.name; }) || {
         folder: file.isDirectory(),
         name: file.name,
+        nameTags: (file.name.match(/[A-Za-z']+/g) || []).join(' ').toLowerCase(),
         path: subPath,
         hash: hashString(subPath.substring(subPath.lastIndexOf('/')) + '/' + file.name)
       };
       paths.push(entry);
-      toGetTags.push((callback) => {
-        insertTags(entry, callback);
-      });
+      if (file.isFile()) {
+        toGetTags.push((callback) => {
+          insertMetadata(entry, callback);
+        });
+      }
 
       // gen thumbs
       if (file.isFile() && file.name.toLowerCase().match(imageRegex)) {
@@ -143,36 +217,6 @@ export function readDir(subPath: string, recursive: boolean, updateNodeCallback:
         if (recursive) {
           queueReadDir(subPath + '/' + file.name, recursive, updateNodeCallback, thumbUpdateCallback);
         }
-        // const dirs = subPath.split('/');
-        // let parentNode = root.tree[0];
-        // if (dirs.length > 1) {
-        //   for (let i = 0; i < dirs.length; i++) {
-        //     const dir = dirs[i];
-        //     for (let j = 0; j < parentNode.children.length; j++) {
-        //       const child = parentNode.children[j];
-        //       if (child.name === dir) {
-        //         parentNode = child;
-        //         break;
-        //       }
-        //     }
-        //   }
-        // }
-        // if (!parentNode.children) {
-        //   parentNode.children = [];
-        // }
-        // let exists = false;
-        // parentNode.children.forEach(element => {
-        //   if (element.id === subPath + '/' + file.name) {
-        //     exists = true;
-        //   }
-        // });
-        // if (!exists) {
-        //   parentNode.children.push({ id: subPath + '/' + file.name, name: file.name, path: subPath, hasChildren: true });
-        // }
-        // updated = true;
-        // if (recursive) {
-        //   readDir(subPath + '/' + file.name, recursive, rootUpdateCallback, thumbUpdateCallback);
-        // }
       }
     });
     updateNodeCallback(parentPath, parentNode, paths);

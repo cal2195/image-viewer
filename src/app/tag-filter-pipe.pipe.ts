@@ -12,11 +12,17 @@ export class TagFilterPipePipe implements PipeTransform {
     }
     const searchTags = tags.toLowerCase().split(' ');
     return items.filter((item) => {
+      let searchString = item.path.toLowerCase().split('/').join(' ') + ' ' + item.nameTags.toLowerCase();
       if (item.tags) {
-        return this.hasTag(item.tags.toLowerCase(), searchTags) || this.hasTag(item.name.toLowerCase(), searchTags);
-      } else {
-        return this.hasTag(item.name.toLowerCase(), searchTags);
+        searchString += ' ' + item.tags.toLowerCase();
       }
+      if (item.orientation) {
+        searchString += ' ' + item.orientation.toLowerCase();
+      }
+      if (item.size) {
+        searchString += ' ' + item.size.toLowerCase();
+      }
+      return this.hasTag(searchString, searchTags);
     });
   }
 

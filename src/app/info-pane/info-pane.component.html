@@ -9,6 +9,19 @@
     </div>
   </ng-container>
   <ng-container
+   *ngIf="this.currentImage && this.currentImage.dimensions">
+    <div
+    (click)="this.tagClicked.emit(this.currentImage.size)"
+    >
+    {{ this.currentImage.size }}
+    </div>
+    <div
+    (click)="this.tagClicked.emit(this.currentImage.orientation)"
+    >
+    {{ this.currentImage.orientation }}
+    </div>
+  </ng-container>
+  <ng-container
    *ngIf="this.currentImage && this.currentImage.tags">
     <div
     *ngFor="let tag of this.currentImage.tags.split(' ')"
@@ -16,8 +29,11 @@
     >
     {{ tag }}
     </div>
+  </ng-container>
+  <ng-container
+   *ngIf="this.currentImage">
     <div
-    *ngFor="let tag of this.currentImage.name.split(' ')"
+    *ngFor="let tag of this.currentImage.nameTags.split(' ')"
     (click)="this.tagClicked.emit(tag)"
     >
     {{ tag }}
